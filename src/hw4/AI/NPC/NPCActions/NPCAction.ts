@@ -23,6 +23,7 @@ export default abstract class NPCAction extends GoapAction {
 
     protected parent: NPCBehavior;
     protected actor: NPCActor;
+    
 
     // The targeting strategy used for this GotoAction - determines how the target is selected basically
     protected _targetFinder: Finder<TargetableEntity>;

@@ -26,6 +26,170 @@
 //     }
     
 // }
+
+// import Stack from "../../Wolfie2D/DataTypes/Collections/Stack";
+// import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+// import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
+// import NavPathStrat from "../../Wolfie2D/Pathfinding/Strategies/NavigationStrategy";
+// import GraphUtils from "../../Wolfie2D/Utils/GraphUtils";
+
+// export default class AstarStrategy extends NavPathStrat {
+//     public buildPath(to: Vec2, from: Vec2): NavigationPath {
+//         // Initialize both open and closed list
+//         let openList = [];
+//         let closedList = [];
+
+//         // Add the start node
+//         openList.push(from);
+
+//         // Loop until you find the end
+//         while (openList.length > 0) {
+//             // Get the current node
+//             let currentNode = openList[0];
+//             let currentIndex = 0;
+
+//             // Find the node with the least f in the open list
+//             for (let index = 0; index < openList.length; index++) {
+//                 if (openList[index].f < currentNode.f) {
+//                     currentNode = openList[index];
+//                     currentIndex = index;
+//                 }
+//             }
+
+//             // Pop current off open list, add to closed list
+//             openList.splice(currentIndex, 1);
+//             closedList.push(currentNode);
+
+//             // Found the goal
+//             if (currentNode === to) {
+//                 let path = new Stack<Vec2>();
+//                 while (currentNode !== from) {
+//                     path.push(currentNode);
+//                     currentNode = currentNode.parent;
+//                 }
+//                 return new NavigationPath(path);
+//             }
+
+//             // Generate children
+//             let children = [];
+//             // for each neighbor of the current node
+//             // This part needs to be implemented based on your grid/map structure
+
+//             // Loop through children
+//             for (let child of children) {
+//                 // Child is on the closed list
+//                 if (closedList.includes(child)) {
+//                     continue;
+//                 }
+
+//                 // Create the f, g, and h values
+//                 child.g = currentNode.g + 1;
+//                 child.h = // Implement heuristic here, e.g., distance to 'to' node
+//                 child.f = child.g + child.h;
+
+//                 // Child is already in open list
+//                 if (openList.find(openNode => openNode === child && child.g > openNode.g)) {
+//                     continue;
+//                 }
+
+//                 // Add the child to the open list
+//                 openList.push(child);
+//             }
+//         }
+
+//         // Return failed path (empty stack) if no path is found
+//         return new NavigationPath(new Stack<Vec2>());
+//     }
+// }
+
+// import Stack from "../../Wolfie2D/DataTypes/Collections/Stack";
+// import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
+// import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
+// import NavPathStrat from "../../Wolfie2D/Pathfinding/Strategies/NavigationStrategy";
+// import GraphUtils from "../../Wolfie2D/Utils/GraphUtils";
+
+// export default class AstarStrategy extends NavPathStrat {
+//     public buildPath(to: Vec2, from: Vec2): NavigationPath {
+//         // Example implementation - you'll need to adapt this based on your game's data structures
+
+//         // Initialize the open list (nodes to be evaluated) and closed list (nodes already evaluated)
+//         let openList: any[] = [];
+//         let closedList: any[] = [];
+
+//         // Start node and end node
+//         let startNode = { position: from, g: 0, h: this.heuristic(from, to), f: 0, parent: null };
+//         let endNode = { position: to, g: 0, h: 0, f: 0, parent: null };
+//         startNode.f = startNode.g + startNode.h;
+
+//         // Add the start node to the open list
+//         openList.push(startNode);
+
+//         while (openList.length > 0) {
+//             // Get the current node (the node with the lowest f cost)
+//             let currentNode = openList.reduce((prev, curr) => prev.f < curr.f ? prev : curr);
+
+//             // Move the current node from the open list to the closed list
+//             openList = openList.filter(node => node !== currentNode);
+//             closedList.push(currentNode);
+
+//             // Check if we have reached the goal, reconstruct the path and return it
+//             if (currentNode.position.equals(to)) {
+//                 return this.reconstructPath(currentNode);
+//             }
+
+//             // Generate currentNode's neighbors
+//             let neighbors = this.getNeighbors(currentNode);
+
+//             for (let neighbor of neighbors) {
+//                 // If neighbor is in the closed list, skip it
+//                 if (closedList.find(node => node.position.equals(neighbor.position))) {
+//                     continue;
+//                 }
+
+//                 // The distance from start to the neighbor
+//                 let tentativeGScore = currentNode.g + currentNode.position.distanceTo(neighbor.position);
+
+//                 // If neighbor is not in open list, add it
+//                 if (!openList.find(node => node.position.equals(neighbor.position))) {
+//                     openList.push(neighbor);
+//                 } else if (tentativeGScore >= neighbor.g) {
+//                     // This is not a better path
+//                     continue;
+//                 }
+
+//                 // This path is the best until now, record it
+//                 neighbor.parent = currentNode;
+//                 neighbor.g = tentativeGScore;
+//                 neighbor.f = neighbor.g + neighbor.h;
+//             }
+//         }
+
+//         // Failed to find a path
+//         return new NavigationPath(new Stack());
+//     }
+
+//     private heuristic(position: Vec2, goal: Vec2): number {
+//         // Implement your heuristic here. For example, Euclidean distance or Manhattan distance
+//         return position.distanceTo(goal);
+//     }
+
+//     private getNeighbors(node: any): any[] {
+//         // Implement a method to get neighbors of the given node
+//         // This will depend on your game's grid structure
+//         // For example, you might return up to 8 neighbors (N, NE, E, SE, S, SW, W, NW)
+//         return [];
+//     }
+
+//     private reconstructPath(node: any): NavigationPath {
+//         let path = new Stack<Vec2>();
+//         while (node != null) {
+//             path.push(node.position);
+//             node = node.parent;
+//         }
+//         return new NavigationPath(path);
+//     }
+// }
+
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import NavPathStrat from "../../Wolfie2D/Pathfinding/Strategies/NavigationStrategy";
