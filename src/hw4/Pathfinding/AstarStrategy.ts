@@ -2,129 +2,154 @@ import Stack from "../../Wolfie2D/DataTypes/Collections/Stack";
 import Vec2 from "../../Wolfie2D/DataTypes/Vec2";
 import NavigationPath from "../../Wolfie2D/Pathfinding/NavigationPath";
 import NavPathStrat from "../../Wolfie2D/Pathfinding/Strategies/NavigationStrategy";
-import GraphUtils from "../../Wolfie2D/Utils/GraphUtils";
 
-// TODO Construct a NavigationPath object using A*
-
-/**
- * The AstarStrategy class is an extension of the abstract NavPathStrategy class. For our navigation system, you can
- * now specify and define your own pathfinding strategy. Originally, the two options were to use Djikstras or a
- * direct (point A -> point B) strategy. The only way to change how the pathfinding was done was by hard-coding things
- * into the classes associated with the navigation system. 
- * 
- * - Peter
- */
-
-
-
-
-// Make sure to define the Node interface outside of the class
-interface Node {
+interface Pixels {
     node: number;
-    g: number;
-    h: number;
-    parent: number | null;
+    a: number;
+    b: number;
+    ancestor: number | null;
   }
-  
   // Helper functions also defined outside of the class
-  function findInSet(set: Set<Node>, predicate: (element: Node) => boolean): Node | undefined {
-      for (let item of set) {
-          if (predicate(item)) {
-              return item;
-          }
-      }
-      return undefined;
-  }
-  
-  function hasNode(set: Set<Node>, nodeNumber: number): boolean {
-      for (let item of set) {
-          if (item.node === nodeNumber) {
-              return true;
-          }
-      }
-      return false;
-  }
-  
-  // The AstarStrategy class
-  export default class AstarStrategy extends NavPathStrat {
-      public buildPath(to: Vec2, from: Vec2): NavigationPath {
-          let start = this.mesh.graph.snap(from);
-          let end = this.mesh.graph.snap(to);
-  
-          let openSet: Node[] = [];
-          openSet.push({
-              node: start,
-              g: 0,
-              h: 0,
-              parent: null
-          });
-  
-          let closedSet = new Set<Node>();
-  
-          while (openSet.length > 0) {
-              let currentIndex = 0;
-              for (let i = 0; i < openSet.length; i++) {
-                  if (openSet[i].g + openSet[i].h < openSet[currentIndex].g + openSet[currentIndex].h) {
-                      currentIndex = i;
-                  }
-              }
-              let currentNode = openSet[currentIndex];
-  
-              if (currentNode.node === end) {
-                  let pathStack = new Stack<Vec2>(this.mesh.graph.numVertices);
-                  pathStack.push(to.clone());
-                  pathStack.push(this.mesh.graph.getNodePosition(end));
-  
-                  while (currentNode.parent !== null) {
-                      pathStack.push(this.mesh.graph.getNodePosition(currentNode.node));
-                      currentNode = findInSet(closedSet, n => n.node === currentNode.parent) || currentNode;
-                  }
-  
-                  return new NavigationPath(pathStack);
-              }
-  
-              openSet.splice(currentIndex, 1);
-              closedSet.add(currentNode);
-  
-              let currentNeighbor = this.mesh.graph.getEdges(currentNode.node);
-              while (currentNeighbor) {
-                  let neighborNodeIndex = currentNeighbor.y;
-  
-                  if (hasNode(closedSet, neighborNodeIndex)) {
-                      currentNeighbor = currentNeighbor.next;
-                      continue;
-                  }
-  
-                  let gScore = currentNode.g + this.distBetween(currentNode.node, neighborNodeIndex);
-                  let neighborObj = openSet.find(n => n.node === neighborNodeIndex);
-  
-                  if (!neighborObj || gScore < neighborObj.g) {
-                      if (!neighborObj) {
-                          openSet.push({
-                              node: neighborNodeIndex,
-                              g: gScore,
-                              h: this.heuristic(this.mesh.graph.getNodePosition(neighborNodeIndex), to),
-                              parent: currentNode.node
-                          });
-                      } else {
-                          neighborObj.g = gScore;
-                          neighborObj.parent = currentNode.node;
-                      }
-                  }
-  
-                  currentNeighbor = currentNeighbor.next;
-              }
-          }
-  
-          return new NavigationPath(new Stack<Vec2>());
-      }
-  
-      heuristic(fromPosition: Vec2, toPosition: Vec2): number {
-          return Math.abs(fromPosition.x - toPosition.x) + Math.abs(fromPosition.y - toPosition.y);
-      }
-  
-      distBetween(nodeIndex1: number, nodeIndex2: number): number {
-          return 1; // This should be replaced with actual logic to calculate the distance
-      }
-  }
+  function available(set: Set<Pixels>, boolean: (element: Pixels) => boolean): Pixels | undefined {
+    const recursive = set.values();
+    let result = recursive.next();
+    while (!result.done) {
+        switch (boolean(result.value)) {
+            case true:
+                return result.value;
+            default:
+                // No action needed
+                break;
+        }
+        result = recursive.next();
+    }
+    return undefined;
+}
 
+
+  
+function thereIsPixels(set: Set<Pixels>, pixelTags: number): boolean {
+    const recursive = set.values();
+    let result = recursive.next();
+    while (!result.done) {
+        switch (result.value.node === pixelTags) {
+            case true:
+                return true;
+            default:
+                // No action needed
+                break;
+        }
+        result = recursive.next();
+    }
+    return false;
+}
+
+
+export default class AstarStrategy extends NavPathStrat {
+    public buildPath(then: Vec2, now: Vec2): NavigationPath {
+        let beginning = this.mesh.graph.snap(now);
+        let finish = this.mesh.graph.snap(then);
+        let allPixels: Pixels[] = [];
+        allPixels.push({
+            node: beginning,
+            a: 0,b: 0, ancestor: null
+        });
+
+        let noPixels = new Set<Pixels>();
+        for (; allPixels.length > 0;) {
+            let thisPosition = 0;
+            let i = 0;
+            while (i < allPixels.length) {
+                switch (true) {
+                    case allPixels[i].a + allPixels[i].b < allPixels[thisPosition].a + allPixels[thisPosition].b:
+                        thisPosition = i;
+                        break;
+                    default:
+                        // No action needed
+                        break;
+                }
+                i++;
+            }
+        
+            let thisPixel = allPixels[thisPosition];
+            switch (true) {
+                case thisPixel.node === finish:
+                    let pixelBunch = new Stack<Vec2>(this.mesh.graph.numVertices);
+                    pixelBunch.push(then.clone());
+                    pixelBunch.push(this.mesh.graph.getNodePosition(finish));
+        
+                    for (let tempNode = thisPixel; tempNode.ancestor !== null; tempNode = available(noPixels, n => n.node === tempNode.ancestor) || tempNode) {
+                        pixelBunch.push(this.mesh.graph.getNodePosition(tempNode.node));
+                    }
+        
+                    return new NavigationPath(pixelBunch);
+                default:
+                    // No action needed
+                    break;
+            }
+        
+            allPixels.splice(thisPosition, 1);
+            noPixels.add(thisPixel);
+        
+            let nextPixel = this.mesh.graph.getEdges(thisPixel.node);
+        
+            for (; nextPixel !== null; nextPixel = nextPixel.next) {
+                let theNextPixel = nextPixel.y;
+                switch (true) {
+                    case thereIsPixels(noPixels, theNextPixel):
+                        continue;
+                    default:
+                        let aOne = thisPixel.a + this.howFar(thisPixel.node, theNextPixel);
+                        let nextOfAOne = allPixels.find(n => n.node === theNextPixel);
+                        switch (true) {
+                            case !nextOfAOne || aOne < nextOfAOne.a:
+                                switch (true) {
+                                    case !nextOfAOne:
+                                        allPixels.push({
+                                            node: theNextPixel,
+                                            a: aOne,
+                                            b: this.makePath(this.mesh.graph.getNodePosition(theNextPixel), then, now),
+                                            ancestor: thisPixel.node
+                                        });
+                                        break;
+                                    default:
+                                        nextOfAOne.a = aOne;
+                                        nextOfAOne.ancestor = thisPixel.node;
+                                        break;
+                                }
+                                break;
+                            default:
+                                // No action needed
+                                break;
+                        }
+                        break;
+                }
+            }
+        }
+        
+        return new NavigationPath(new Stack<Vec2>());
+    }
+
+    // Adjust the heuristic to consider the 2 by 2 node area and encourage moving up first
+    makePath(fromPosition: Vec2, toPosition: Vec2, from: Vec2): number {
+        let thisA = Math.abs(fromPosition.x - toPosition.x);
+        let thisB = Math.abs(fromPosition.y - toPosition.y);
+        switch (true) {
+            case fromPosition.x <= toPosition.x && fromPosition.y >= toPosition.y:
+                thisB -= Math.abs(fromPosition.y - from.y);
+                break;
+            default:
+                // No adjustment needed
+                break;
+        }
+        return Math.max(thisA, thisB);
+    }
+    
+
+    // Update distBetween to calculate the distance between 2 by 2 nodes
+    howFar(nodeIndex1: number, nodeIndex2: number): number {
+        let firstPixel = this.mesh.graph.getNodePosition(nodeIndex1);
+        let secondPixel = this.mesh.graph.getNodePosition(nodeIndex2);
+        return Math.sqrt(Math.pow(firstPixel.x - secondPixel.x, 2) + Math.pow(firstPixel.y - secondPixel.y, 2));
+    }
+}
