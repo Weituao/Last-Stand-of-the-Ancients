@@ -25,6 +25,7 @@ export default class InputHandler implements Updateable {
 	private eventQueue: EventQueue;
     private enabled: boolean[];
     private receiver: Receiver;
+    private gameIsPaused: boolean = false;
      
     /**
      * Creates a new InputHandler
@@ -105,10 +106,27 @@ export default class InputHandler implements Updateable {
         let gameEvent = new GameEvent(GameEventType.KEY_DOWN, {key: key});
         this.eventQueue.addEvent(gameEvent);
 
-        if (key === 'escape') {
-            let pauseEvent = new GameEvent(InputEvent.PAUSED, {});
-            this.eventQueue.addEvent(pauseEvent);
+        /*
+
+        if (key === 'p') {
+            //let pauseEvent = new GameEvent(InputEvent.PAUSED, {});
+            //this.eventQueue.addEvent(pauseEvent);
+
+            if(!this.gameIsPaused){
+                let pauseEvent = new GameEvent(InputEvent.PAUSED, {});
+                this.eventQueue.addEvent(pauseEvent);
+                console.log("Game has been paused");
+                this.gameIsPaused=!this.gameIsPaused;
+
+            }else{
+                let pauseEvent = new GameEvent(InputEvent.RESUMED, {});
+                this.eventQueue.addEvent(pauseEvent);
+                console.log("Game has been resumed");
+                this.gameIsPaused=!this.gameIsPaused;
+
+            }
         }
+        */
 
 
     }
