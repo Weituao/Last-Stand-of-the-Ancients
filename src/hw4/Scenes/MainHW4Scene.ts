@@ -825,8 +825,8 @@ export default class MainHW4Scene extends HW4Scene {
   // The position graph for the navmesh
   private graph: PositionGraph;
 
-  private GameIsPaused: boolean;
-
+  private GameIsPaused: boolean = false;
+    
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
 
@@ -923,6 +923,7 @@ export default class MainHW4Scene extends HW4Scene {
     }); */
 
     if(Input.isKeyJustPressed("p")) {
+
       this.emitter.fireEvent(BattlerEvent.PAUSE);
       console.log("MainHW4Scene has detected a p press");
 
@@ -953,9 +954,21 @@ export default class MainHW4Scene extends HW4Scene {
         break;
       }
       case BattlerEvent.PAUSE: {
-        this.battlers.forEach(battler => {
-          (<GameNode>(<Actor>battler)).freeze();
+        if (!this.GameIsPaused) {
+          this.battlers.forEach(battler => {
+              (<GameNode>(<Actor>battler)).freeze();
+          });
+          this.GameIsPaused=!this.GameIsPaused;
+      } else {
+          // Optionally, handle the case when the game is paused
+          // For example, unfreeze battlers or perform some other action
+          this.battlers.forEach(battler => {
+            (<GameNode>(<Actor>battler)).unfreeze();
         });
+        this.GameIsPaused=!this.GameIsPaused;
+
+
+      }
         break
         
 
