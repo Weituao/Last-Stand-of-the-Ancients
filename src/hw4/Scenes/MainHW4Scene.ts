@@ -118,8 +118,8 @@ export default class MainHW4Scene extends HW4Scene {
     // Set the viewport bounds to the tilemap
     let tilemapSize: Vec2 = this.walls.size;
 
-    this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
-    this.viewport.setZoomLevel(2);
+        this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
+        this.viewport.setZoomLevel(2);
 
     this.initLayers();
 
@@ -257,13 +257,13 @@ export default class MainHW4Scene extends HW4Scene {
 
 
 
-  /**
-   * Initializes the player in the scene
-   */
-  protected initializePlayer(): void {
-    let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
-    player.position.set(200, 200);
-    player.battleGroup = 2;
+    /**
+     * Initializes the player in the scene
+     */
+    protected initializePlayer(): void {
+        let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
+        player.position.set(200, 200);
+        player.battleGroup = 2;
 
     player.health = 10;
     player.maxHealth = 10;
@@ -300,26 +300,26 @@ export default class MainHW4Scene extends HW4Scene {
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
 
-    // Initialize the red healers
-    for (let i = 0; i < red.healers.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
-      npc.position.set(red.healers[i][0], red.healers[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+        // Initialize the red healers
+        for (let i = 0; i < red.healers.length; i++) {
+            let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
+            npc.position.set(red.healers[i][0], red.healers[i][1]);
+            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
 
-      npc.battleGroup = 1;
-      npc.speed = 10;
-      npc.health = 10;
-      npc.maxHealth = 10;
-      npc.navkey = "navmesh";
+            npc.battleGroup = 1;
+            npc.speed = 10;
+            npc.health = 10;
+            npc.maxHealth = 10;
+            npc.navkey = "navmesh";
 
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
+            // Give the NPC a healthbar
+            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
+            this.healthbars.set(npc.id, healthbar);
 
-      npc.addAI(HealerBehavior);
-      npc.animation.play("IDLE");
-      this.battlers.push(npc);
-    }
+            npc.addAI(HealerBehavior);
+            npc.animation.play("IDLE");
+            this.battlers.push(npc);
+        }
 
     for (let i = 0; i < red.enemies.length; i++) {
       let npc = this.add.animatedSprite(NPCActor, "RedEnemy", "primary");
@@ -373,26 +373,26 @@ export default class MainHW4Scene extends HW4Scene {
       this.battlers.push(npc);
     }
 
-    // Initialize the blue healers
-    for (let i = 0; i < blue.healers.length; i++) {
+        // Initialize the blue healers
+        for (let i = 0; i < blue.healers.length; i++) {
+            
+            let npc = this.add.animatedSprite(NPCActor, "BlueHealer", "primary");
+            npc.position.set(blue.healers[i][0], blue.healers[i][1]);
+            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
 
-      let npc = this.add.animatedSprite(NPCActor, "BlueHealer", "primary");
-      npc.position.set(blue.healers[i][0], blue.healers[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+            npc.battleGroup = 2;
+            npc.speed = 10;
+            npc.health = 1;
+            npc.maxHealth = 10;
+            npc.navkey = "navmesh";
 
-      npc.battleGroup = 2;
-      npc.speed = 10;
-      npc.health = 1;
-      npc.maxHealth = 10;
-      npc.navkey = "navmesh";
+            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
+            this.healthbars.set(npc.id, healthbar);
 
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-
-      npc.addAI(HealerBehavior);
-      npc.animation.play("IDLE");
-      this.battlers.push(npc);
-    }
+            npc.addAI(HealerBehavior);
+            npc.animation.play("IDLE");
+            this.battlers.push(npc);
+        }
 
 
   }
