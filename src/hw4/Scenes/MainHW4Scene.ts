@@ -169,6 +169,8 @@ export default class MainHW4Scene extends HW4Scene {
   this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
   this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
   this.pauseLayer.addNode(this.pauseScreenSprite);
+    this.pauseScreenSprite.scale.set(0.8, 0.8);
+
   this.pauseLayer.setHidden(true); // Hide the layer initially
   }
   /**
@@ -421,26 +423,26 @@ export default class MainHW4Scene extends HW4Scene {
       this.battlers.push(npc);
     }
 
-        // Initialize the blue healers
-        for (let i = 0; i < blue.healers.length; i++) {
+        // // Initialize the blue healers
+        // for (let i = 0; i < blue.healers.length; i++) {
             
-            let npc = this.add.animatedSprite(NPCActor, "BlueHealer", "primary");
-            npc.position.set(blue.healers[i][0], blue.healers[i][1]);
-            npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+        //     let npc = this.add.animatedSprite(NPCActor, "BlueHealer", "primary");
+        //     npc.position.set(blue.healers[i][0], blue.healers[i][1]);
+        //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
 
-            npc.battleGroup = 2;
-            npc.speed = 10;
-            npc.health = 1;
-            npc.maxHealth = 10;
-            npc.navkey = "navmesh";
+        //     npc.battleGroup = 2;
+        //     npc.speed = 10;
+        //     npc.health = 1;
+        //     npc.maxHealth = 10;
+        //     npc.navkey = "navmesh";
 
-            let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
-            this.healthbars.set(npc.id, healthbar);
+        //     let healthbar = new HealthbarHUD(this, npc, "primary", {size: npc.size.clone().scaled(2, 1/2), offset: npc.size.clone().scaled(0, -1/2)});
+        //     this.healthbars.set(npc.id, healthbar);
 
-            npc.addAI(HealerBehavior);
-            npc.animation.play("IDLE");
-            this.battlers.push(npc);
-        }
+        //     npc.addAI(HealerBehavior);
+        //     npc.animation.play("IDLE");
+        //     this.battlers.push(npc);
+        // }
 
 
   }
