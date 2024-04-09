@@ -36,6 +36,8 @@ import Position from "../GameSystems/Targeting/Position";
 import AstarStrategy from "../Pathfinding/AstarStrategy";
 import HW4Scene from "./HW4Scene";
 import Input from "../../Wolfie2D/Input/Input";
+import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
+import Layer from "../../Wolfie2D/Scene/Layer";
 
 const BattlerGroups = {
   RED: 1,
@@ -43,6 +45,8 @@ const BattlerGroups = {
 } as const;
 
 export default class MainHW4Scene extends HW4Scene {
+  private pauseScreen: Sprite;
+
 
   /** GameSystems in the HW4 Scene */
   private inventoryHud: InventoryHUD;
@@ -74,7 +78,10 @@ export default class MainHW4Scene extends HW4Scene {
 
     this.laserguns = new Array<LaserGun>();
     this.healthpacks = new Array<Healthpack>();
+    
   }
+
+ 
 
   /**
    * @see Scene.update()
@@ -104,11 +111,14 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
     this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
+
+    this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
   }
   /**
    * @see Scene.startScene
    */
   public override startScene() {
+    
     // Add in the tilemap
     let tilemapLayers = this.add.tilemap("level");
 
@@ -145,6 +155,10 @@ export default class MainHW4Scene extends HW4Scene {
     this.receiver.subscribe(BattlerEvent.BATTLER_KILLED);
     this.receiver.subscribe(BattlerEvent.BATTLER_RESPAWN);
     this.receiver.subscribe(BattlerEvent.PAUSE);
+
+    this.pauseScreen = this.add.sprite("pauseScreen", "primary");
+    this.pauseScreen.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.pauseScreen.visible = false; // Set it to invisible initially
   }
   /**
    * @see Scene.updateScene
@@ -198,6 +212,11 @@ export default class MainHW4Scene extends HW4Scene {
               (<GameNode>(<Actor>battler)).freeze();
           });
           this.GameIsPaused=!this.GameIsPaused;
+          this.pauseScreen.visible=true;
+          
+          
+
+          
       } else {
           // Optionally, handle the case when the game is paused
           // For example, unfreeze battlers or perform some other action
@@ -205,6 +224,7 @@ export default class MainHW4Scene extends HW4Scene {
             (<GameNode>(<Actor>battler)).unfreeze();
         });
         this.GameIsPaused=!this.GameIsPaused;
+        this.pauseScreen.visible=false;
 
 
       }
@@ -262,7 +282,7 @@ export default class MainHW4Scene extends HW4Scene {
      */
     protected initializePlayer(): void {
         let player = this.add.animatedSprite(PlayerActor, "player1", "primary");
-        player.position.set(200, 200);
+        player.position.set(350, 350);
         player.battleGroup = 2;
 
     player.health = 10;
