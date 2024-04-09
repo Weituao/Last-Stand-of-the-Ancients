@@ -4,6 +4,8 @@ import GameEvent from "../Events/GameEvent";
 import { GameEventType } from "../Events/GameEventType";
 import Updateable from "../DataTypes/Interfaces/Updateable";
 import Receiver from "../Events/Receiver";
+import { BattlerEvent,  InputEvent } from "../../hw4/Events";
+
 
 export enum InputHandlers {
     MOUSE_DOWN = 0,
@@ -23,6 +25,7 @@ export default class InputHandler implements Updateable {
 	private eventQueue: EventQueue;
     private enabled: boolean[];
     private receiver: Receiver;
+    private gameIsPaused: boolean = false;
      
     /**
      * Creates a new InputHandler
@@ -102,6 +105,30 @@ export default class InputHandler implements Updateable {
         let key = this.getKey(event);
         let gameEvent = new GameEvent(GameEventType.KEY_DOWN, {key: key});
         this.eventQueue.addEvent(gameEvent);
+
+        /*
+
+        if (key === 'p') {
+            //let pauseEvent = new GameEvent(InputEvent.PAUSED, {});
+            //this.eventQueue.addEvent(pauseEvent);
+
+            if(!this.gameIsPaused){
+                let pauseEvent = new GameEvent(InputEvent.PAUSED, {});
+                this.eventQueue.addEvent(pauseEvent);
+                console.log("Game has been paused");
+                this.gameIsPaused=!this.gameIsPaused;
+
+            }else{
+                let pauseEvent = new GameEvent(InputEvent.RESUMED, {});
+                this.eventQueue.addEvent(pauseEvent);
+                console.log("Game has been resumed");
+                this.gameIsPaused=!this.gameIsPaused;
+
+            }
+        }
+        */
+
+
     }
 
     private handleKeyUp = (event: KeyboardEvent): void => {
@@ -148,4 +175,6 @@ export default class InputHandler implements Updateable {
         let y = mouseEvent.clientY - rect.top;
         return new Vec2(x, y);
     }
+
+    
 }

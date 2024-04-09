@@ -53,7 +53,6 @@ export default abstract class NPCAction extends GoapAction {
             // Construct a path from the actor to the target
             this.path = this.actor.getPath(this.actor.position, this.target.position);
         }
-        console.log('hihihi  ' , this.target , "   " , this.actor)
     }
 
     public update(deltaT: number): void {
