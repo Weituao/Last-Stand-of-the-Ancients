@@ -45,7 +45,8 @@ const BattlerGroups = {
 } as const;
 
 export default class MainHW4Scene extends HW4Scene {
-  private pauseScreen: Sprite;
+  private pauseScreenSprite: Sprite;
+  private pauseLayer:Layer;
 
 
   /** GameSystems in the HW4 Scene */
@@ -156,9 +157,16 @@ export default class MainHW4Scene extends HW4Scene {
     this.receiver.subscribe(BattlerEvent.BATTLER_RESPAWN);
     this.receiver.subscribe(BattlerEvent.PAUSE);
 
-    this.pauseScreen = this.add.sprite("pauseScreen", "primary");
-    this.pauseScreen.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-    this.pauseScreen.visible = false; // Set it to invisible initially
+  // Create and add the pause layer
+  this.pauseLayer = new Layer(this, "pauseLayer");
+  this.pauseLayer = this.addLayer('pauseLayer', 100);
+
+
+  // Now, let's create a pause screen sprite and add it to the pause layer
+  let pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
+  pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+  this.pauseLayer.addNode(pauseScreenSprite);
+  this.pauseLayer.setHidden(true); // Hide the layer initially
   }
   /**
    * @see Scene.updateScene
@@ -212,7 +220,9 @@ export default class MainHW4Scene extends HW4Scene {
               (<GameNode>(<Actor>battler)).freeze();
           });
           this.GameIsPaused=!this.GameIsPaused;
-          this.pauseScreen.visible=true;
+          this.pauseLayer.setHidden(false);
+          //this.pauseScreenSprite.visible=true;
+          
           
           
 
@@ -224,7 +234,8 @@ export default class MainHW4Scene extends HW4Scene {
             (<GameNode>(<Actor>battler)).unfreeze();
         });
         this.GameIsPaused=!this.GameIsPaused;
-        this.pauseScreen.visible=false;
+        //this.pauseScreenSprite.visible=false;
+        this.pauseLayer.setHidden(true);
 
 
       }
