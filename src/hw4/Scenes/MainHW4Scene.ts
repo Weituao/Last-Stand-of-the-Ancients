@@ -70,6 +70,8 @@ export default class MainHW4Scene extends HW4Scene {
   private graph: PositionGraph;
 
   private GameIsPaused: boolean = false;
+  private player: PlayerActor;  // Add this line if it's missing
+
     
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
@@ -79,6 +81,7 @@ export default class MainHW4Scene extends HW4Scene {
 
     this.laserguns = new Array<LaserGun>();
     this.healthpacks = new Array<Healthpack>();
+    
     
   }
 
@@ -163,9 +166,9 @@ export default class MainHW4Scene extends HW4Scene {
 
 
   // Now, let's create a pause screen sprite and add it to the pause layer
-  let pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
-  pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-  this.pauseLayer.addNode(pauseScreenSprite);
+  this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
+  this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+  this.pauseLayer.addNode(this.pauseScreenSprite);
   this.pauseLayer.setHidden(true); // Hide the layer initially
   }
   /**
@@ -216,11 +219,25 @@ export default class MainHW4Scene extends HW4Scene {
       }
       case BattlerEvent.PAUSE: {
         if (!this.GameIsPaused) {
+
+          
           this.battlers.forEach(battler => {
               (<GameNode>(<Actor>battler)).freeze();
           });
           this.GameIsPaused=!this.GameIsPaused;
           this.pauseLayer.setHidden(false);
+
+          const center = this.viewport.getCenter();
+          this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+
+          /*
+          position: new Vec2(
+            center.x - this.viewport.getHalfSize().x + 100,
+            center.y - this.viewport.getHalfSize().y + 50
+          ),
+          */
+
+          //this.pauseScreenSprite.position.set(center.x - this.viewport.getHalfSize().x + 100,center.y - this.viewport.getHalfSize().y + 50)
           //this.pauseScreenSprite.visible=true;
           
           
