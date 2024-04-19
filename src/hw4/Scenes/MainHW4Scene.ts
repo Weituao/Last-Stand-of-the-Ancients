@@ -38,6 +38,7 @@ import HW4Scene from "./HW4Scene";
 import Input from "../../Wolfie2D/Input/Input";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
+import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 const BattlerGroups = {
   RED: 1,
@@ -115,8 +116,10 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
     this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
+    this.load.audio("music", "hw4_assets/music/music.wav"); //Change the path to your music
 
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
+
   }
   /**
    * @see Scene.startScene
@@ -172,6 +175,8 @@ export default class MainHW4Scene extends HW4Scene {
     this.pauseScreenSprite.scale.set(0.8, 0.8);
 
   this.pauseLayer.setHidden(true); // Hide the layer initially
+
+  this.emitter.fireEvent(GameEventType.PLAY_SOUND, {key: "music", loop: true, holdReference: true});
   }
   /**
    * @see Scene.updateScene
