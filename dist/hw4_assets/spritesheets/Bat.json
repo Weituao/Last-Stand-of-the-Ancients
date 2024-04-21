@@ -1,8 +1,8 @@
 {
-    "name": "BlueEnemy",
-    "spriteSheetImage": "BlueEnemy.png",
-    "spriteWidth": 16,
-    "spriteHeight": 16,
+    "name": "Bat",
+    "spriteSheetImage": "Bat.png",
+    "spriteWidth": 24,
+    "spriteHeight": 24,
     "columns": 5,
     "rows": 1,
     "durationType": "time",

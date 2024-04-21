@@ -40,7 +40,7 @@ import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
-export default class MainHW4Scene extends HW4Scene {
+export default class Level4 extends HW4Scene {
   private pauseScreenSprite: Sprite;
   private pauseLayer: Layer;
   /** GameSystems in the HW4 Scene */
@@ -196,7 +196,6 @@ export default class MainHW4Scene extends HW4Scene {
       }
     });
   }
-
   
   /**
    * Handle events from the rest of the game
@@ -278,8 +277,8 @@ export default class MainHW4Scene extends HW4Scene {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
-    this.player.health = 1000;
-    this.player.maxHealth = 1000;
+    this.player.health = 10;
+    this.player.maxHealth = 10;
     this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
     this.inventoryHud = new InventoryHUD(this, this.player.inventory, "inventorySlot", {
       start: new Vec2(232, 24),
@@ -312,7 +311,7 @@ export default class MainHW4Scene extends HW4Scene {
       npc.position.set(red.healers[i][0], red.healers[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       npc.battleGroup = 1;
-      npc.speed = 10;
+      npc.speed = 40;
       npc.health = 20;
       npc.maxHealth = 20;
       npc.navkey = "navmesh";
@@ -333,7 +332,7 @@ export default class MainHW4Scene extends HW4Scene {
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
       npc.battleGroup = 1
-      npc.speed = 10;
+      npc.speed = 20;
       npc.health = 50;
       npc.maxHealth = 50;
       npc.navkey = "navmesh";
@@ -353,7 +352,7 @@ export default class MainHW4Scene extends HW4Scene {
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
       npc.battleGroup = 1
-      npc.speed = 10;
+      npc.speed = 15;
       npc.health = 100;
       npc.maxHealth = 100;
       npc.navkey = "navmesh";

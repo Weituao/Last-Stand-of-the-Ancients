@@ -40,7 +40,7 @@ import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
-export default class MainHW4Scene extends HW4Scene {
+export default class Level2 extends HW4Scene {
   private pauseScreenSprite: Sprite;
   private pauseLayer: Layer;
   /** GameSystems in the HW4 Scene */
@@ -196,7 +196,6 @@ export default class MainHW4Scene extends HW4Scene {
       }
     });
   }
-
   
   /**
    * Handle events from the rest of the game
@@ -278,8 +277,8 @@ export default class MainHW4Scene extends HW4Scene {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
-    this.player.health = 1000;
-    this.player.maxHealth = 1000;
+    this.player.health = 10;
+    this.player.maxHealth = 10;
     this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
     this.inventoryHud = new InventoryHUD(this, this.player.inventory, "inventorySlot", {
       start: new Vec2(232, 24),
@@ -306,24 +305,7 @@ export default class MainHW4Scene extends HW4Scene {
   protected initializeNPCs(): void {
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
-    // Initialize the red healers
-    for (let i = 0; i < red.healers.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
-      npc.position.set(red.healers[i][0], red.healers[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-      npc.battleGroup = 1;
-      npc.speed = 10;
-      npc.health = 20;
-      npc.maxHealth = 20;
-      npc.navkey = "navmesh";
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-      npc.addAI(HealerBehavior);
-      npc.animation.play("IDLE");
-      this.battlers.push(npc);
-    }
-
+    //initialize bug
     for (let i = 0; i < red.enemies.length; i++) {
       let npc = this.add.animatedSprite(NPCActor, "RedEnemy", "primary");
       npc.position.set(red.enemies[i][0], red.enemies[i][1]);
@@ -333,29 +315,9 @@ export default class MainHW4Scene extends HW4Scene {
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
       npc.battleGroup = 1
-      npc.speed = 10;
+      npc.speed = 20;
       npc.health = 50;
       npc.maxHealth = 50;
-      npc.navkey = "navmesh";
-      npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
-      // Play the NPCs "IDLE" animation 
-      npc.animation.play("IDLE");
-      // Add the NPC to the battlers array
-      this.battlers.push(npc);
-    }
-
-    for (let i = 0; i < red.demon.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "player1", "primary");
-      npc.position.set(red.demon[i][0], red.demon[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-      // Set the NPCs stats
-      npc.battleGroup = 1
-      npc.speed = 10;
-      npc.health = 100;
-      npc.maxHealth = 100;
       npc.navkey = "navmesh";
       npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
       // Play the NPCs "IDLE" animation 

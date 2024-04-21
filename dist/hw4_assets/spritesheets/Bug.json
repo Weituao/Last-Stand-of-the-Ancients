@@ -1,8 +1,8 @@
 {
-    "name": "RedEnemy",
-    "spriteSheetImage": "RedEnemy.png",
-    "spriteWidth": 16,
-    "spriteHeight": 16,
+    "name": "Bug",
+    "spriteSheetImage": "Bug.png",
+    "spriteWidth": 24,
+    "spriteHeight": 24,
     "columns": 5,
     "rows": 1,
     "durationType": "time",
