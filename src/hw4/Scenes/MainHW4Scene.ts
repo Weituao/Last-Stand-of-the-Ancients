@@ -43,6 +43,8 @@ import Level1 from "./Level1";
 import Level2 from "./Level2";
 import Level3 from "./Level3";
 import Level4 from "./Level4";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 
 export default class MainHW4Scene extends HW4Scene {
   protected invincibilityTimer: Timer | null = null;
@@ -69,6 +71,8 @@ export default class MainHW4Scene extends HW4Scene {
   // Initialize the properties to null initially
   private increasedHealth: boolean | null = null;
   private originalMaxHealth: number | null = null;
+  protected levelLabel: Label;
+
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -121,6 +125,8 @@ export default class MainHW4Scene extends HW4Scene {
     this.initializePlayer();
     this.initializeItems();
     this.initializeNavmesh();
+    this.addUI();
+
     // // Create the NPCS
     // this.initializeNPCs();
     // Subscribe to relevant events
@@ -388,11 +394,93 @@ export default class MainHW4Scene extends HW4Scene {
     }
   }
 
+  protected addUI(){
+    // In-game labels
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(80, 30), text: "Main Level"});
+
+    this.levelLabel.textColor = Color.WHITE
+    this.levelLabel.font = "PixelSimple";
+
+    /*
+
+    this.switchLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(80, 50), text: "Switches Left: " + (this.totalSwitches - this.switchesPressed)});
+    this.switchLabel.textColor = Color.BLACK;
+    this.switchLabel.font = "PixelSimple";
+
+    this.livesCountLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(500, 30), text: "Lives: " + GameLevel.livesCount});
+    this.livesCountLabel.textColor = Color.BLACK;
+    this.livesCountLabel.font = "PixelSimple";
+
+    // End of level label (start off screen)
+    this.levelEndLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(-300, 200), text: "Level Complete"});
+    this.levelEndLabel.size.set(1200, 60);
+    this.levelEndLabel.borderRadius = 0;
+    this.levelEndLabel.backgroundColor = new Color(34, 32, 52);
+    this.levelEndLabel.textColor = Color.WHITE;
+    this.levelEndLabel.fontSize = 48;
+    this.levelEndLabel.font = "PixelSimple";
+
+    // Add a tween to move the label on screen
+    this.levelEndLabel.tweens.add("slideIn", {
+        startDelay: 0,
+        duration: 1000,
+        effects: [
+            {
+                property: TweenableProperties.posX,
+                start: -300,
+                end: 300,
+                ease: EaseFunctionType.OUT_SINE
+            }
+        ]
+    });
+
+    // Create our particle system and initialize the pool
+    this.system = new HW5_ParticleSystem(100, new Vec2((5 * 32), (10 * 32)), 2000, 3, 1, 100);
+    this.system.initializePool(this, "primary");
+
+    this.levelTransitionScreen = <Rect>this.add.graphic(GraphicType.RECT, "UI", {position: new Vec2(300, 200), size: new Vec2(600, 400)});
+    this.levelTransitionScreen.color = new Color(34, 32, 52);
+    this.levelTransitionScreen.alpha = 1;
+
+    this.levelTransitionScreen.tweens.add("fadeIn", {
+        startDelay: 0,
+        duration: 1000,
+        effects: [
+            {
+                property: TweenableProperties.alpha,
+                start: 0,
+                end: 1,
+                ease: EaseFunctionType.IN_OUT_QUAD
+            }
+        ],
+        onEnd: HW5_Events.LEVEL_END
+    });
+
+    this.levelTransitionScreen.tweens.add("fadeOut", {
+        startDelay: 0,
+        duration: 1000,
+        effects: [
+            {
+                property: TweenableProperties.alpha,
+                start: 1,
+                end: 0,
+                ease: EaseFunctionType.IN_OUT_QUAD
+            }
+        ],
+        onEnd: HW5_Events.LEVEL_START
+    });
+    */
+}
+
+
+
   /** Initializes the layers in the scene */
   protected initLayers(): void {
+
     this.addLayer("primary", 10);
     this.addUILayer("slots");
     this.addUILayer("items");
+    this.addUILayer("UI");
     this.getLayer("slots").setDepth(1);
     this.getLayer("items").setDepth(2);
   }
@@ -420,6 +508,10 @@ export default class MainHW4Scene extends HW4Scene {
     this.battlers.push(this.player);
     this.viewport.follow(this.player);
 }
+
+
+
+
 
   /**
    * Initialize the NPCs 
