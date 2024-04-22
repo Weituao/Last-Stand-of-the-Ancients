@@ -84,8 +84,9 @@ export default class MainHW4Scene extends HW4Scene {
     // Load the player and enemy spritesheets
     this.load.spritesheet("player1", "hw4_assets/spritesheets/player1.json");
     // Load in the enemy sprites
-    this.load.spritesheet("RedEnemy", "hw4_assets/spritesheets/Bug.json");
-    this.load.spritesheet("RedHealer", "hw4_assets/spritesheets/Bat.json");
+    this.load.spritesheet("bat", "hw4_assets/spritesheets/bat.json");
+    this.load.spritesheet("bug", "hw4_assets/spritesheets/bug.json");
+    this.load.spritesheet("demon", "hw4_assets/spritesheets/demon.json");
     // Load the tilemap
     this.load.tilemap("level", "hw4_assets/tilemaps/HW4Tilemap.json");
     // Load the enemy locations
@@ -99,6 +100,7 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
     this.load.audio("music", "hw4_assets/music/music.wav");
     this.load.audio("walk", "hw4_assets/music/walk.wav");
+    this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
   }
 
@@ -113,7 +115,7 @@ export default class MainHW4Scene extends HW4Scene {
     // Set the viewport bounds to the tilemap
     let tilemapSize: Vec2 = this.walls.size;
     this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
-    this.viewport.setZoomLevel(2);
+    this.viewport.setZoomLevel(3.5);
     this.initLayers();
     // Create the player
     this.initializePlayer();
@@ -138,7 +140,7 @@ export default class MainHW4Scene extends HW4Scene {
     this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
     this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
     this.pauseLayer.addNode(this.pauseScreenSprite);
-    this.pauseScreenSprite.scale.set(0.8, 0.8);
+    this.pauseScreenSprite.scale.set(0.4, 0.4);
     this.pauseLayer.setHidden(true); // Hide the layer initially
     this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music", loop: true, holdReference: true });
   }
@@ -195,7 +197,7 @@ export default class MainHW4Scene extends HW4Scene {
             }
         }
     }
-    if (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d")) {
+    if (!this.GameIsPaused && (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d"))) {
       console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
       if (!this.isWalkingSoundPlaying) {
           this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
@@ -210,58 +212,115 @@ export default class MainHW4Scene extends HW4Scene {
           }
       }
   }
+  if (Input.isMouseJustPressed(0)) {
+    // Play the attack sound
+    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+}
     if (this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled) {
         this.initializeNPCsAlreadyCalled = true;
         this.initializeNPCs();
     }
 }
 
+  // protected chasePlayer(): void {
+  //   console.log("enterChase called");
+  //   // Assuming enemy battlers are identified by a certain battleGroup value
+  //   const enemyBattleGroup = 1;  // This is just an example, adjust as needed.
+  //   console.log("Enemy battle group: ", enemyBattleGroup);
+  //   // First, check if this.player is defined and has a position property.
+  //   if (!this.player || !this.player.position) {
+  //     console.log("Player or player position is not defined.");
+  //     return; // Exit the function if player or player's position is undefined or null.
+  //   }
+  //   this.battlers.forEach((battler, index) => {
+  //     console.log(`Processing battler ${index + 1}/${this.battlers.length}`);
+  //     //In enterChase() method, when trying to access this.player.position, it saids that position is undefined
+  //     if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
+  //       console.log("Battler is defined and has a position.");
+  //       console.log("Battler Position:" + battler.position);
+  //       console.log("this.player.position:" + this.player.position);
+  //       const distanceToPlayer = battler.position.distanceTo(this.player.position);
+  //       console.log(`Distance to player: ${distanceToPlayer}`);
+  //       //if (distanceToPlayer < 50) {
+  //         if (true) {
+  //         this.isFollowingPlayer = true;
+  //         console.log("Player seen, starting chase.");
+  //         // Adjust enemy's x position
+  //         if (battler.position.x > this.player.position.x) {
+  //           battler.position.x -= 0.2;
+  //           console.log(`Moving battler left to x=${battler.position.x}`);
+  //         } else {
+  //           battler.position.x += 0.2;
+  //           console.log(`Moving battler right to x=${battler.position.x}`);
+  //         }
+  //         // Adjust enemy's y position
+  //         if (battler.position.y > this.player.position.y) {
+  //           battler.position.y -= 0.2;
+  //           console.log(`Moving battler up to y=${battler.position.y}`);
+  //         } else {
+  //           battler.position.y += 0.2;
+  //           console.log(`Moving battler down to y=${battler.position.y}`);
+  //         }
+  //       } 
+  //     } else {
+  //       console.log("Battler is undefined, or does not have a position, or is not an enemy.");
+  //     }
+  //   });
+  // }
+
   protected chasePlayer(): void {
-    console.log("enterChase called");
-    // Assuming enemy battlers are identified by a certain battleGroup value
-    const enemyBattleGroup = 1;  // This is just an example, adjust as needed.
-    console.log("Enemy battle group: ", enemyBattleGroup);
-    // First, check if this.player is defined and has a position property.
-    if (!this.player || !this.player.position) {
-      console.log("Player or player position is not defined.");
-      return; // Exit the function if player or player's position is undefined or null.
+    // First, check if the game is paused
+    if (this.GameIsPaused) {
+        return; // If paused, exit the function
     }
+
+    // Next, check if this.player is defined and has a position property.
+    if (!this.player || !this.player.position) {
+        return; // Exit the function if player or player's position is undefined or null.
+    }
+
+    // Define different minimum distances and speeds for each enemy battle group
+    const enemyAttributes = {
+        1: { minDistance: 15, speed: 0.65 },  // Attributes for enemy battle group 1
+        2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
+        3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
+    };
+
     this.battlers.forEach((battler, index) => {
-      console.log(`Processing battler ${index + 1}/${this.battlers.length}`);
-      //In enterChase() method, when trying to access this.player.position, it saids that position is undefined
-      if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
-        console.log("Battler is defined and has a position.");
-        console.log("Battler Position:" + battler.position);
-        console.log("this.player.position:" + this.player.position);
-        const distanceToPlayer = battler.position.distanceTo(this.player.position);
-        console.log(`Distance to player: ${distanceToPlayer}`);
-        //if (distanceToPlayer < 50) {
-          if (true) {
-          this.isFollowingPlayer = true;
-          console.log("Player seen, starting chase.");
-          // Adjust enemy's x position
-          if (battler.position.x > this.player.position.x) {
-            battler.position.x -= 0.2;
-            console.log(`Moving battler left to x=${battler.position.x}`);
-          } else {
-            battler.position.x += 0.2;
-            console.log(`Moving battler right to x=${battler.position.x}`);
-          }
-          // Adjust enemy's y position
-          if (battler.position.y > this.player.position.y) {
-            battler.position.y -= 0.2;
-            console.log(`Moving battler up to y=${battler.position.y}`);
-          } else {
-            battler.position.y += 0.2;
-            console.log(`Moving battler down to y=${battler.position.y}`);
-          }
-        } 
-      } else {
-        console.log("Battler is undefined, or does not have a position, or is not an enemy.");
-      }
+        if (battler && battler.position) {
+            // Determine the enemy battle group
+            const enemyBattleGroup = battler.battleGroup;
+            // Check if the enemy battle group is valid and has defined attributes
+            if (enemyBattleGroup in enemyAttributes) {
+                // Get the attributes for the current enemy battle group
+                const attributes = enemyAttributes[enemyBattleGroup];
+                const minDistance = attributes.minDistance;
+                const speed = attributes.speed;
+                
+                // Calculate the direction vector towards the player
+                const direction = this.player.position.clone().sub(battler.position).normalize();
+                // Adjust enemy's position based on the direction and speed
+                battler.position.add(direction.scaled(speed));
+
+                // Check for collisions with other enemies
+                for (let otherBattler of this.battlers) {
+                    if (otherBattler !== battler && otherBattler.position) {
+                        const distanceToOther = battler.position.distanceTo(otherBattler.position);
+                        if (distanceToOther < minDistance) {
+                            // If too close, adjust the position away from the other enemy
+                            const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
+                            battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
+                        }
+                    }
+                }
+            } else {
+                console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
+            }
+        }
     });
-  }
-  
+}
+
+
   /**
    * Handle events from the rest of the game
    * @param event a game event
@@ -344,7 +403,11 @@ export default class MainHW4Scene extends HW4Scene {
     this.player.battleGroup = 2;
     this.player.health = 100;
     this.player.maxHealth = 1000;
-    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
+    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED;
+
+    // Increase the player's speed
+    this.player.speed *= 20; // Double the player's speed
+
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
@@ -356,9 +419,74 @@ export default class MainHW4Scene extends HW4Scene {
     this.player.animation.play("IDLE");
     this.battlers.push(this.player);
     this.viewport.follow(this.player);
-  }
+}
 
   /**
+   * Initialize the NPCs 
+   */
+  // protected initializeNPCs(): void {
+  //   // Get the object data for the red enemies
+  //   let red = this.load.getObject("red");
+  //   // Initialize the red healers
+  //   for (let i = 0; i < red.healers.length; i++) {
+  //     let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
+  //     npc.position.set(red.healers[i][0], red.healers[i][1]);
+  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+  //     npc.battleGroup = 1;
+  //     npc.speed = 40;
+  //     npc.health = 20;
+  //     npc.maxHealth = 20;
+  //     npc.navkey = "navmesh";
+  //     // Give the NPC a healthbar
+  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+  //     this.healthbars.set(npc.id, healthbar);
+  //     npc.addAI(HealerBehavior);
+  //     npc.animation.play("IDLE");
+  //     this.battlers.push(npc);
+  //   }
+
+  //   for (let i = 0; i < red.enemies.length; i++) {
+  //     let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
+  //     npc.position.set(red.enemies[i][0], red.enemies[i][1]);
+  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+  //     // Give the NPC a healthbar
+  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+  //     this.healthbars.set(npc.id, healthbar);
+  //     // Set the NPCs stats
+  //     npc.battleGroup = 1
+  //     npc.speed = 20;
+  //     npc.health = 50;
+  //     npc.maxHealth = 50;
+  //     npc.navkey = "navmesh";
+  //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
+  //     // Play the NPCs "IDLE" animation 
+  //     npc.animation.play("IDLE");
+  //     // Add the NPC to the battlers array
+  //     this.battlers.push(npc);
+  //   }
+
+  //   for (let i = 0; i < red.demon.length; i++) {
+  //     let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
+  //     npc.position.set(red.demon[i][0], red.demon[i][1]);
+  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+  //     // Give the NPC a healthbar
+  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+  //     this.healthbars.set(npc.id, healthbar);
+  //     // Set the NPCs stats
+  //     npc.battleGroup = 1
+  //     npc.speed = 15;
+  //     npc.health = 100;
+  //     npc.maxHealth = 100;
+  //     npc.navkey = "navmesh";
+  //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
+  //     // Play the NPCs "IDLE" animation 
+  //     npc.animation.play("IDLE");
+  //     // Add the NPC to the battlers array
+  //     this.battlers.push(npc);
+  //   }
+  // }
+
+    /**
    * Initialize the NPCs 
    */
   protected initializeNPCs(): void {
@@ -366,7 +494,7 @@ export default class MainHW4Scene extends HW4Scene {
     let red = this.load.getObject("red");
     // Initialize the red healers
     for (let i = 0; i < red.healers.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
       npc.position.set(red.healers[i][0], red.healers[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       npc.battleGroup = 1;
@@ -383,14 +511,14 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     for (let i = 0; i < red.enemies.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "RedEnemy", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
       npc.position.set(red.enemies[i][0], red.enemies[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       // Give the NPC a healthbar
       let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
-      npc.battleGroup = 1
+      npc.battleGroup = 2
       npc.speed = 10;
       npc.health = 50;
       npc.maxHealth = 50;
@@ -403,14 +531,14 @@ export default class MainHW4Scene extends HW4Scene {
     }
 
     for (let i = 0; i < red.demon.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "player1", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
       npc.position.set(red.demon[i][0], red.demon[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       // Give the NPC a healthbar
       let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
-      npc.battleGroup = 1
+      npc.battleGroup = 3
       npc.speed = 10;
       npc.health = 100;
       npc.maxHealth = 100;
@@ -422,7 +550,6 @@ export default class MainHW4Scene extends HW4Scene {
       this.battlers.push(npc);
     }
   }
-
   /**
    * Initialize the items in the scene (healthpacks and laser guns)
    */
