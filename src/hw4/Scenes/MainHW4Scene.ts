@@ -59,6 +59,7 @@ export default class MainHW4Scene extends HW4Scene {
   private GameIsPaused: boolean = false;
   private player: PlayerActor;  // Add this line if it's missing
   private isFollowingPlayer: boolean = false;
+  private isWalkingSoundPlaying:boolean=false;
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -88,6 +89,7 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
     this.load.audio("music", "hw4_assets/music/music.wav");
+    this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
   }
 
@@ -146,6 +148,35 @@ export default class MainHW4Scene extends HW4Scene {
       console.log("MainHW4Scene has detected a p press");
     };
     this.chasePlayer();
+    /*
+    if (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d")) {
+      console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
+      this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
+
+  }else{
+    //stop playing the walking sound
+    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+
+  }*/
+      // Check if any of the movement keys are just pressed
+      if (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d")) {
+        console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
+        if (!this.isWalkingSoundPlaying) {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
+            this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
+        }
+    } else {
+        // Check if any of the movement keys are currently down to continue playing the sound
+        if (!Input.isKeyPressed("w") && !Input.isKeyPressed("a") && !Input.isKeyPressed("s") && !Input.isKeyPressed("d")) {
+            if (this.isWalkingSoundPlaying) {
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+                this.isWalkingSoundPlaying = false; // Update the flag when the sound is stopped
+            }
+        }
+    }
+
+
+
   }
 
   protected chasePlayer(): void {
