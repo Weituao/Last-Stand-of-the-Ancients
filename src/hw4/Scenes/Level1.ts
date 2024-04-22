@@ -60,6 +60,9 @@ export default class Level1 extends HW4Scene {
   private GameIsPaused: boolean = false;
   private player: PlayerActor;  // Add this line if it's missing
   private isFollowingPlayer: boolean = false;
+  private initializeNPCsBool:boolean = false
+  private initializeNPCsAlreadyCalled:boolean = false
+
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -108,7 +111,7 @@ export default class Level1 extends HW4Scene {
     this.initializeItems();
     this.initializeNavmesh();
     // Create the NPCS
-    this.initializeNPCs();
+    //this.initializeNPCs();
     // Subscribe to relevant events
     this.receiver.subscribe("healthpack");
     this.receiver.subscribe("enemyDied");
@@ -149,6 +152,43 @@ export default class Level1 extends HW4Scene {
       console.log("MainHW4Scene has detected a p press");
     };
     this.chasePlayer();
+    if (Input.isKeyJustPressed("1")) {
+      console.log("1 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("2")) {
+      console.log("2 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("3")) {
+      console.log("3 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("4")) {
+      console.log("4 has been pressed.");
+
+    };
+
+    if (Input.isKeyJustPressed("4")) {
+      console.log("4 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("0")) {
+      this.initializeNPCsBool=true;
+
+    };
+
+    if(this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled){
+      this.initializeNPCsAlreadyCalled=true;
+      this.initializeNPCs();
+
+
+    }
+
+
+
+
+
   }
 
   protected chasePlayer(): void {
@@ -285,7 +325,7 @@ export default class Level1 extends HW4Scene {
    * Initialize the NPCs 
    */
   protected initializeNPCs(): void {
-    // Get the object data for the red enemies
+    // Get the object data for the red enemiess
     let red = this.load.getObject("red");
     // Initialize the bat
     for (let i = 0; i < red.healers.length; i++) {

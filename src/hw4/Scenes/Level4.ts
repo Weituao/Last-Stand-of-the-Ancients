@@ -56,6 +56,8 @@ export default class Level4 extends HW4Scene {
   private GameIsPaused: boolean = false;
   private player: PlayerActor;  // Add this line if it's missing
   private isFollowingPlayer: boolean = false;
+  private initializeNPCsBool:boolean = false
+  private initializeNPCsAlreadyCalled:boolean = false
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -105,7 +107,7 @@ export default class Level4 extends HW4Scene {
     this.initializeItems();
     this.initializeNavmesh();
     // Create the NPCS
-    this.initializeNPCs();
+    //this.initializeNPCs();
     // Subscribe to relevant events
     this.receiver.subscribe("healthpack");
     this.receiver.subscribe("enemyDied");
@@ -141,6 +143,19 @@ export default class Level4 extends HW4Scene {
       console.log("MainHW4Scene has detected a p press");
     };
     this.chasePlayer();
+
+    if (Input.isKeyJustPressed("0")) {
+      this.initializeNPCsBool=true;
+
+    };
+
+
+    if(this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled){
+      this.initializeNPCsAlreadyCalled=true;
+      this.initializeNPCs();
+
+
+    }
   }
 
   protected chasePlayer(): void {
@@ -286,7 +301,7 @@ export default class Level4 extends HW4Scene {
       npc.position.set(red.healers[i][0], red.healers[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       npc.battleGroup = 1;
-      npc.speed = 40;
+      npc.speed = 10;
       npc.health = 20;
       npc.maxHealth = 20;
       npc.navkey = "navmesh";
