@@ -25,8 +25,6 @@ import { ItemEvent, PlayerEvent, BattlerEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
-import InventoryHUD from "../GameSystems/HUD/InventoryHUD";
-import Inventory from "../GameSystems/ItemSystem/Inventory";
 import Item from "../GameSystems/ItemSystem/Item";
 import Healthpack from "../GameSystems/ItemSystem/Items/Healthpack";
 import LaserGun from "../GameSystems/ItemSystem/Items/LaserGun";
@@ -39,12 +37,15 @@ import Input from "../../Wolfie2D/Input/Input";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Level2 from "./Level2";
+import Level3 from "./Level3";
+import Level1 from "./Level1";
+import Level4 from "./Level4";
 
 export default class MainHW4Scene extends HW4Scene {
   private pauseScreenSprite: Sprite;
   private pauseLayer: Layer;
   /** GameSystems in the HW4 Scene */
-  private inventoryHud: InventoryHUD;
   /** All the battlers in the HW4Scene (including the player) */
   private battlers: (Battler & Actor)[];
   /** Healthbars for the battlers */
@@ -59,6 +60,11 @@ export default class MainHW4Scene extends HW4Scene {
   private GameIsPaused: boolean = false;
   private player: PlayerActor;  // Add this line if it's missing
   private isFollowingPlayer: boolean = false;
+  private initializeNPCsBool:boolean = false
+      // Initialize the properties to null initially
+      private increasedHealth: boolean | null = null;
+      private originalMaxHealth: number | null = null;
+  private initializeNPCsAlreadyCalled:boolean = false
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -85,7 +91,6 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.object("laserguns", "hw4_assets/data/items/laserguns.json");
     // Load the healthpack, inventory slot, and laser gun sprites
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
-    this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
     this.load.audio("music", "hw4_assets/music/music.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
@@ -109,7 +114,7 @@ export default class MainHW4Scene extends HW4Scene {
     this.initializeItems();
     this.initializeNavmesh();
     // Create the NPCS
-    this.initializeNPCs();
+    //this.initializeNPCs();
     // Subscribe to relevant events
     this.receiver.subscribe("healthpack");
     this.receiver.subscribe("enemyDied");
@@ -137,16 +142,55 @@ export default class MainHW4Scene extends HW4Scene {
    */
   public override updateScene(deltaT: number): void {
     while (this.receiver.hasNextEvent()) {
-      this.handleEvent(this.receiver.getNextEvent());
-    }
-    this.inventoryHud.update(deltaT);
+        this.handleEvent(this.receiver.getNextEvent());}
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     if (Input.isKeyJustPressed("p")) {
-      this.emitter.fireEvent(BattlerEvent.PAUSE);
-      console.log("MainHW4Scene has detected a p press");
-    };
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        console.log("MainHW4Scene has detected a p press");};
     this.chasePlayer();
-  }
+    if (Input.isKeyJustPressed("1")) {
+        console.log("1 has been pressed.");
+        this.sceneManager.changeToScene(Level1);};
+    if (Input.isKeyJustPressed("2")) {
+        console.log("2 has been pressed.");
+        this.sceneManager.changeToScene(Level2);};
+    if (Input.isKeyJustPressed("3")) {
+        console.log("3 has been pressed.");
+        this.sceneManager.changeToScene(Level3);};
+    if (Input.isKeyJustPressed("4")) {
+        console.log("4 has been pressed.");
+        this.sceneManager.changeToScene(Level4);};
+    if (Input.isKeyJustPressed("0")) {
+        this.initializeNPCsBool = true;};
+    if (Input.isKeyJustPressed("f")) {
+        // Restore player's health to maximum
+        this.player.health = this.player.maxHealth;}
+    // Check if the 'i' key is pressed
+    if (Input.isKeyJustPressed("i")) {
+        // Toggle the flag to indicate increased health
+        this.increasedHealth = !this.increasedHealth;
+        // If player's health hasn't been modified yet
+        if (this.increasedHealth) {
+            // Increase player's max health to 10000
+            this.originalMaxHealth = this.player.maxHealth;
+            this.player.maxHealth = 10000;
+            // Set player's health to the new max health value
+            this.player.health = this.player.maxHealth;
+        } else {
+            // If player's health has been modified, revert to the original max health
+            if (this.originalMaxHealth !== null) {
+                this.player.maxHealth = this.originalMaxHealth;
+                // Set player's health to the original max health value
+                this.player.health = this.originalMaxHealth;
+            }
+        }
+    }
+    if (this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled) {
+        this.initializeNPCsAlreadyCalled = true;
+        this.initializeNPCs();
+    }
+}
+
 
   protected chasePlayer(): void {
     console.log("enterChase called");
@@ -196,7 +240,6 @@ export default class MainHW4Scene extends HW4Scene {
       }
     });
   }
-
   
   /**
    * Handle events from the rest of the game
@@ -209,10 +252,6 @@ export default class MainHW4Scene extends HW4Scene {
         break;
       }
       case BattlerEvent.BATTLER_RESPAWN: {
-        break;
-      }
-      case ItemEvent.ITEM_REQUEST: {
-        this.handleItemRequest(event.data.get("node"), event.data.get("inventory"));
         break;
       }
       case BattlerEvent.PAUSE: {
@@ -243,15 +282,6 @@ export default class MainHW4Scene extends HW4Scene {
     }
   }
 
-  protected handleItemRequest(node: GameNode, inventory: Inventory): void {
-    let items: Item[] = new Array<Item>(...this.healthpacks, ...this.laserguns).filter((item: Item) => {
-      return item.inventory === null && item.position.distanceTo(node.position) <= 100;
-    });
-    if (items.length > 0) {
-      inventory.add(items.reduce(ClosestPositioned(node)));
-    }
-  }
-
   /**
    * Handles an NPC being killed by unregistering the NPC from the scenes subsystems
    * @param event an NPC-killed event
@@ -278,15 +308,8 @@ export default class MainHW4Scene extends HW4Scene {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
-    this.player.health = 1000;
-    this.player.maxHealth = 1000;
-    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-    this.inventoryHud = new InventoryHUD(this, this.player.inventory, "inventorySlot", {
-      start: new Vec2(22, 24),
-      slotLayer: "slots",
-      padding: 8,
-      itemLayer: "items"
-    });
+    this.player.health = 10;
+    this.player.maxHealth = 100;
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
