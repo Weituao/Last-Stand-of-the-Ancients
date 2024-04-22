@@ -25,6 +25,8 @@ import { ItemEvent, PlayerEvent, BattlerEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
+import InventoryHUD from "../GameSystems/HUD/InventoryHUD";
+import Inventory from "../GameSystems/ItemSystem/Inventory";
 import Item from "../GameSystems/ItemSystem/Item";
 import Healthpack from "../GameSystems/ItemSystem/Items/Healthpack";
 import LaserGun from "../GameSystems/ItemSystem/Items/LaserGun";
@@ -37,11 +39,12 @@ import Input from "../../Wolfie2D/Input/Input";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-import Level2 from "./Level2";
 import Level1 from "./Level1";
+import Level2 from "./Level2";
 import Level4 from "./Level4";
 
 export default class Level3 extends HW4Scene {
+  protected invincibilityTimer: Timer | null = null;
   private pauseScreenSprite: Sprite;
   private pauseLayer: Layer;
   /** GameSystems in the HW4 Scene */
@@ -60,10 +63,11 @@ export default class Level3 extends HW4Scene {
   private player: PlayerActor;  // Add this line if it's missing
   private isFollowingPlayer: boolean = false;
   private initializeNPCsBool:boolean = false
+  private isWalkingSoundPlaying:boolean=false;
   private initializeNPCsAlreadyCalled:boolean = false
-      // Initialize the properties to null initially
-    private increasedHealth: boolean | null = null;
-    private originalMaxHealth: number | null = null;
+  // Initialize the properties to null initially
+  private increasedHealth: boolean | null = null;
+  private originalMaxHealth: number | null = null;
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -90,8 +94,10 @@ export default class Level3 extends HW4Scene {
     this.load.object("laserguns", "hw4_assets/data/items/laserguns.json");
     // Load the healthpack, inventory slot, and laser gun sprites
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
+    this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
     this.load.audio("music", "hw4_assets/music/music.wav");
+    this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
   }
 
@@ -112,8 +118,8 @@ export default class Level3 extends HW4Scene {
     this.initializePlayer();
     this.initializeItems();
     this.initializeNavmesh();
-    // Create the NPCS
-    //this.initializeNPCs();
+    // // Create the NPCS
+    // this.initializeNPCs();
     // Subscribe to relevant events
     this.receiver.subscribe("healthpack");
     this.receiver.subscribe("enemyDied");
@@ -188,12 +194,26 @@ export default class Level3 extends HW4Scene {
             }
         }
     }
+    if (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d")) {
+      console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
+      if (!this.isWalkingSoundPlaying) {
+          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
+          this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
+      }
+  } else {
+      // Check if any of the movement keys are currently down to continue playing the sound
+      if (!Input.isKeyPressed("w") && !Input.isKeyPressed("a") && !Input.isKeyPressed("s") && !Input.isKeyPressed("d")) {
+          if (this.isWalkingSoundPlaying) {
+              this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+              this.isWalkingSoundPlaying = false; // Update the flag when the sound is stopped
+          }
+      }
+  }
     if (this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled) {
         this.initializeNPCsAlreadyCalled = true;
         this.initializeNPCs();
     }
 }
-
 
   protected chasePlayer(): void {
     console.log("enterChase called");
@@ -234,10 +254,7 @@ export default class Level3 extends HW4Scene {
             battler.position.y += 0.2;
             console.log(`Moving battler down to y=${battler.position.y}`);
           }
-        } else {
-          this.isFollowingPlayer = false;
-          console.log("Player not seen, not chasing.");
-        }
+        } 
       } else {
         console.log("Battler is undefined, or does not have a position, or is not an enemy.");
       }
@@ -255,6 +272,10 @@ export default class Level3 extends HW4Scene {
         break;
       }
       case BattlerEvent.BATTLER_RESPAWN: {
+        break;
+      }
+      case ItemEvent.ITEM_REQUEST: {
+        this.handleItemRequest(event.data.get("node"), event.data.get("inventory"));
         break;
       }
       case BattlerEvent.PAUSE: {
@@ -285,6 +306,15 @@ export default class Level3 extends HW4Scene {
     }
   }
 
+  protected handleItemRequest(node: GameNode, inventory: Inventory): void {
+    let items: Item[] = new Array<Item>(...this.healthpacks, ...this.laserguns).filter((item: Item) => {
+      return item.inventory === null && item.position.distanceTo(node.position) <= 100;
+    });
+    if (items.length > 0) {
+      inventory.add(items.reduce(ClosestPositioned(node)));
+    }
+  }
+
   /**
    * Handles an NPC being killed by unregistering the NPC from the scenes subsystems
    * @param event an NPC-killed event
@@ -311,8 +341,9 @@ export default class Level3 extends HW4Scene {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
-    this.player.health = 10;
-    this.player.maxHealth = 100;
+    this.player.health = 100;
+    this.player.maxHealth = 1000;
+    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
@@ -332,7 +363,7 @@ export default class Level3 extends HW4Scene {
   protected initializeNPCs(): void {
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
-    //inizialize demon
+    //initialize demon
     for (let i = 0; i < red.demon.length; i++) {
       let npc = this.add.animatedSprite(NPCActor, "player1", "primary");
       npc.position.set(red.demon[i][0], red.demon[i][1]);
@@ -366,6 +397,7 @@ export default class Level3 extends HW4Scene {
       this.laserguns[i] = LaserGun.create(sprite, line);
       this.laserguns[i].position.set(laserguns.items[i][0], laserguns.items[i][1]);
     }
+
     let healthpacks = this.load.getObject("healthpacks");
     this.healthpacks = new Array<Healthpack>(healthpacks.items.length);
     for (let i = 0; i < healthpacks.items.length; i++) {

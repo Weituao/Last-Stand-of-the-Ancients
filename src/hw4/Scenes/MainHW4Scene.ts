@@ -119,8 +119,8 @@ export default class MainHW4Scene extends HW4Scene {
     this.initializePlayer();
     this.initializeItems();
     this.initializeNavmesh();
-    // Create the NPCS
-    this.initializeNPCs();
+    // // Create the NPCS
+    // this.initializeNPCs();
     // Subscribe to relevant events
     this.receiver.subscribe("healthpack");
     this.receiver.subscribe("enemyDied");
@@ -255,16 +255,12 @@ export default class MainHW4Scene extends HW4Scene {
             battler.position.y += 0.2;
             console.log(`Moving battler down to y=${battler.position.y}`);
           }
-        } else {
-          this.isFollowingPlayer = false;
-          console.log("Player not seen, not chasing.");
-        }
+        } 
       } else {
         console.log("Battler is undefined, or does not have a position, or is not an enemy.");
       }
     });
   }
-
   
   /**
    * Handle events from the rest of the game
@@ -346,15 +342,9 @@ export default class MainHW4Scene extends HW4Scene {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
-    this.player.health = 1000;
+    this.player.health = 100;
     this.player.maxHealth = 1000;
     this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-    this.inventoryHud = new InventoryHUD(this, this.player.inventory, "inventorySlot", {
-      start: new Vec2(232, 24),
-      slotLayer: "slots",
-      padding: 8,
-      itemLayer: "items"
-    });
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
