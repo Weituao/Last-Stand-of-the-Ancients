@@ -140,6 +140,25 @@ export default class Level1 extends HW4Scene {
       console.log("MainHW4Scene has detected a p press");
     };
     this.chasePlayer();
+    if (Input.isKeyJustPressed("1")) {
+      console.log("1 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("2")) {
+      console.log("2 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("3")) {
+      console.log("3 has been pressed.");
+
+    };
+    if (Input.isKeyJustPressed("4")) {
+      console.log("4 has been pressed.");
+
+    };
+
+
+
   }
 
   protected chasePlayer(): void {
