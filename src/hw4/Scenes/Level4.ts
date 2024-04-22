@@ -37,6 +37,9 @@ import Input from "../../Wolfie2D/Input/Input";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
+import Level2 from "./Level2";
+import Level3 from "./Level3";
+import Level1 from "./Level1";
 
 export default class Level4 extends HW4Scene {
   private pauseScreenSprite: Sprite;
@@ -57,6 +60,9 @@ export default class Level4 extends HW4Scene {
   private player: PlayerActor;  // Add this line if it's missing
   private isFollowingPlayer: boolean = false;
   private initializeNPCsBool:boolean = false
+      // Initialize the properties to null initially
+      private increasedHealth: boolean | null = null;
+      private originalMaxHealth: number | null = null;
   private initializeNPCsAlreadyCalled:boolean = false
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
@@ -135,28 +141,55 @@ export default class Level4 extends HW4Scene {
    */
   public override updateScene(deltaT: number): void {
     while (this.receiver.hasNextEvent()) {
-      this.handleEvent(this.receiver.getNextEvent());
-    }
+        this.handleEvent(this.receiver.getNextEvent());}
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     if (Input.isKeyJustPressed("p")) {
-      this.emitter.fireEvent(BattlerEvent.PAUSE);
-      console.log("MainHW4Scene has detected a p press");
-    };
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        console.log("MainHW4Scene has detected a p press");};
     this.chasePlayer();
-
+    if (Input.isKeyJustPressed("1")) {
+        console.log("1 has been pressed.");
+        this.sceneManager.changeToScene(Level1);};
+    if (Input.isKeyJustPressed("2")) {
+        console.log("2 has been pressed.");
+        this.sceneManager.changeToScene(Level2);};
+    if (Input.isKeyJustPressed("3")) {
+        console.log("3 has been pressed.");
+        this.sceneManager.changeToScene(Level3);};
+    if (Input.isKeyJustPressed("4")) {
+        console.log("4 has been pressed.");
+        this.sceneManager.changeToScene(Level4);};
     if (Input.isKeyJustPressed("0")) {
-      this.initializeNPCsBool=true;
-
-    };
-
-
-    if(this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled){
-      this.initializeNPCsAlreadyCalled=true;
-      this.initializeNPCs();
-
-
+        this.initializeNPCsBool = true;};
+    if (Input.isKeyJustPressed("f")) {
+        // Restore player's health to maximum
+        this.player.health = this.player.maxHealth;}
+    // Check if the 'i' key is pressed
+    if (Input.isKeyJustPressed("i")) {
+        // Toggle the flag to indicate increased health
+        this.increasedHealth = !this.increasedHealth;
+        // If player's health hasn't been modified yet
+        if (this.increasedHealth) {
+            // Increase player's max health to 10000
+            this.originalMaxHealth = this.player.maxHealth;
+            this.player.maxHealth = 10000;
+            // Set player's health to the new max health value
+            this.player.health = this.player.maxHealth;
+        } else {
+            // If player's health has been modified, revert to the original max health
+            if (this.originalMaxHealth !== null) {
+                this.player.maxHealth = this.originalMaxHealth;
+                // Set player's health to the original max health value
+                this.player.health = this.originalMaxHealth;
+            }
+        }
     }
-  }
+    if (this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled) {
+        this.initializeNPCsAlreadyCalled = true;
+        this.initializeNPCs();
+    }
+}
+
 
   protected chasePlayer(): void {
     console.log("enterChase called");
@@ -275,7 +308,7 @@ export default class Level4 extends HW4Scene {
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
     this.player.health = 10;
-    this.player.maxHealth = 10;
+    this.player.maxHealth = 100;
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
@@ -322,7 +355,7 @@ export default class Level4 extends HW4Scene {
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
       npc.battleGroup = 1
-      npc.speed = 20;
+      npc.speed = 10;
       npc.health = 50;
       npc.maxHealth = 50;
       npc.navkey = "navmesh";
@@ -342,7 +375,7 @@ export default class Level4 extends HW4Scene {
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
       npc.battleGroup = 1
-      npc.speed = 15;
+      npc.speed = 10;
       npc.health = 100;
       npc.maxHealth = 100;
       npc.navkey = "navmesh";
