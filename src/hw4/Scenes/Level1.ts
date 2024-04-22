@@ -316,7 +316,7 @@ export default class Level1 extends HW4Scene {
    * Initialize the NPCs 
    */
   protected initializeNPCs(): void {
-    // Get the object data for the red enemies
+    // Get the object data for the red enemiess
     let red = this.load.getObject("red");
     // Initialize the bat
     for (let i = 0; i < red.healers.length; i++) {
