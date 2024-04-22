@@ -39,6 +39,10 @@ import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 
 export default class Level1 extends HW4Scene {
+
+  protected invincibilityTimer: Timer | null = null;
+
+
   private pauseScreenSprite: Sprite;
   private pauseLayer: Layer;
   /** GameSystems in the HW4 Scene */
@@ -125,7 +129,12 @@ export default class Level1 extends HW4Scene {
     this.pauseScreenSprite.scale.set(0.8, 0.8);
     this.pauseLayer.setHidden(true); // Hide the layer initially
     this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music", loop: true, holdReference: true });
-  }
+
+    // Start a timer at the top left of the screen
+    let timer = new Timer(0); // Initialize a timer with 0 seconds
+    timer.start(); // Start the timer
+}
+
 
   /**
    * @see Scene.updateScene
