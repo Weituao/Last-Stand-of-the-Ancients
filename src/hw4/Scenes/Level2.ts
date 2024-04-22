@@ -25,8 +25,6 @@ import { ItemEvent, PlayerEvent, BattlerEvent } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
-import InventoryHUD from "../GameSystems/HUD/InventoryHUD";
-import Inventory from "../GameSystems/ItemSystem/Inventory";
 import Item from "../GameSystems/ItemSystem/Item";
 import Healthpack from "../GameSystems/ItemSystem/Items/Healthpack";
 import LaserGun from "../GameSystems/ItemSystem/Items/LaserGun";
@@ -44,7 +42,6 @@ export default class Level2 extends HW4Scene {
   private pauseScreenSprite: Sprite;
   private pauseLayer: Layer;
   /** GameSystems in the HW4 Scene */
-  private inventoryHud: InventoryHUD;
   /** All the battlers in the HW4Scene (including the player) */
   private battlers: (Battler & Actor)[];
   /** Healthbars for the battlers */
@@ -85,7 +82,6 @@ export default class Level2 extends HW4Scene {
     this.load.object("laserguns", "hw4_assets/data/items/laserguns.json");
     // Load the healthpack, inventory slot, and laser gun sprites
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
-    this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
     this.load.audio("music", "hw4_assets/music/music.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
@@ -139,7 +135,6 @@ export default class Level2 extends HW4Scene {
     while (this.receiver.hasNextEvent()) {
       this.handleEvent(this.receiver.getNextEvent());
     }
-    this.inventoryHud.update(deltaT);
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     if (Input.isKeyJustPressed("p")) {
       this.emitter.fireEvent(BattlerEvent.PAUSE);
@@ -210,10 +205,6 @@ export default class Level2 extends HW4Scene {
       case BattlerEvent.BATTLER_RESPAWN: {
         break;
       }
-      case ItemEvent.ITEM_REQUEST: {
-        this.handleItemRequest(event.data.get("node"), event.data.get("inventory"));
-        break;
-      }
       case BattlerEvent.PAUSE: {
         if (!this.GameIsPaused) {
           this.battlers.forEach(battler => {
@@ -239,15 +230,6 @@ export default class Level2 extends HW4Scene {
       default: {
         throw new Error(`Unhandled event type "${event.type}" caught in HW4Scene event handler`);
       }
-    }
-  }
-
-  protected handleItemRequest(node: GameNode, inventory: Inventory): void {
-    let items: Item[] = new Array<Item>(...this.healthpacks, ...this.laserguns).filter((item: Item) => {
-      return item.inventory === null && item.position.distanceTo(node.position) <= 100;
-    });
-    if (items.length > 0) {
-      inventory.add(items.reduce(ClosestPositioned(node)));
     }
   }
 
@@ -279,13 +261,6 @@ export default class Level2 extends HW4Scene {
     this.player.battleGroup = 2;
     this.player.health = 10;
     this.player.maxHealth = 10;
-    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
-    this.inventoryHud = new InventoryHUD(this, this.player.inventory, "inventorySlot", {
-      start: new Vec2(232, 24),
-      slotLayer: "slots",
-      padding: 8,
-      itemLayer: "items"
-    });
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
