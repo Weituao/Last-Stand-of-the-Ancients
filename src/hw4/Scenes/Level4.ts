@@ -301,7 +301,7 @@ export default class Level4 extends HW4Scene {
       npc.position.set(red.healers[i][0], red.healers[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       npc.battleGroup = 1;
-      npc.speed = 40;
+      npc.speed = 10;
       npc.health = 20;
       npc.maxHealth = 20;
       npc.navkey = "navmesh";

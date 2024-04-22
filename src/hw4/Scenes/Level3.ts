@@ -307,7 +307,7 @@ export default class Level3 extends HW4Scene {
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
       npc.battleGroup = 1
-      npc.speed = 15;
+      npc.speed = 10;
       npc.health = 100;
       npc.maxHealth = 100;
       npc.navkey = "navmesh";
