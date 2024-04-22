@@ -149,15 +149,19 @@ export default class Level2 extends HW4Scene {
     this.chasePlayer();
     if (Input.isKeyJustPressed("1")) {
         console.log("1 has been pressed.");
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
         this.sceneManager.changeToScene(Level1);};
     if (Input.isKeyJustPressed("2")) {
         console.log("2 has been pressed.");
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
         this.sceneManager.changeToScene(Level2);};
     if (Input.isKeyJustPressed("3")) {
         console.log("3 has been pressed.");
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
         this.sceneManager.changeToScene(Level3);};
     if (Input.isKeyJustPressed("4")) {
         console.log("4 has been pressed.");
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
         this.sceneManager.changeToScene(Level4);};
     if (Input.isKeyJustPressed("0")) {
         this.initializeNPCsBool = true;};
@@ -189,7 +193,6 @@ export default class Level2 extends HW4Scene {
         this.initializeNPCs();
     }
 }
-
 
   protected chasePlayer(): void {
     console.log("enterChase called");
