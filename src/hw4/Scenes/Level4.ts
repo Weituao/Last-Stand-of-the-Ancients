@@ -42,11 +42,24 @@ import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
 import Level1 from "./Level1";
 import Level2 from "./Level2";
 import Level3 from "./Level3";
+import Level4 from "./Level4";
+import Label from "../../Wolfie2D/Nodes/UIElements/Label";
+import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
+import MainMenu from "./MainMenu";
 
-export default class Level4 extends HW4Scene {
+export default class MainHW4Scene extends HW4Scene {
   protected invincibilityTimer: Timer | null = null;
   private pauseScreenSprite: Sprite;
+  private controlScreenSprite: Sprite;
+  private levelSelectionScreenSprite: Sprite;
+  private helpScreenSprite: Sprite;
+
+
   private pauseLayer: Layer;
+  private controlLayer: Layer;
+  private levelSelectionLayer: Layer;
+  private helpLayer: Layer;
+
   /** GameSystems in the HW4 Scene */
   /** All the battlers in the HW4Scene (including the player) */
   private battlers: (Battler & Actor)[];
@@ -68,6 +81,14 @@ export default class Level4 extends HW4Scene {
   // Initialize the properties to null initially
   private increasedHealth: boolean | null = null;
   private originalMaxHealth: number | null = null;
+  protected levelLabel: Label;
+
+  private uiLayer: Layer;
+
+  private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
+  private npcInitInterval: number = 15; // Interval in seconds to initialize NPCs
+
+
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -83,8 +104,9 @@ export default class Level4 extends HW4Scene {
     // Load the player and enemy spritesheets
     this.load.spritesheet("player1", "hw4_assets/spritesheets/player1.json");
     // Load in the enemy sprites
-    this.load.spritesheet("RedEnemy", "hw4_assets/spritesheets/Bug.json");
-    this.load.spritesheet("RedHealer", "hw4_assets/spritesheets/Bat.json");
+    this.load.spritesheet("bat", "hw4_assets/spritesheets/bat.json");
+    this.load.spritesheet("bug", "hw4_assets/spritesheets/bug.json");
+    this.load.spritesheet("demon", "hw4_assets/spritesheets/demon.json");
     // Load the tilemap
     this.load.tilemap("level", "hw4_assets/tilemaps/HW4Tilemap.json");
     // Load the enemy locations
@@ -96,9 +118,13 @@ export default class Level4 extends HW4Scene {
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
     this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
-    this.load.audio("music", "hw4_assets/music/music.wav");
+    this.load.audio("music4", "hw4_assets/music/music4.wav");
     this.load.audio("walk", "hw4_assets/music/walk.wav");
+    this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen1.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen1.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen1.png");
   }
 
   /**
@@ -112,12 +138,14 @@ export default class Level4 extends HW4Scene {
     // Set the viewport bounds to the tilemap
     let tilemapSize: Vec2 = this.walls.size;
     this.viewport.setBounds(0, 0, tilemapSize.x, tilemapSize.y);
-    this.viewport.setZoomLevel(2);
+    this.viewport.setZoomLevel(3.5);
     this.initLayers();
     // Create the player
     this.initializePlayer();
     this.initializeItems();
     this.initializeNavmesh();
+    this.addUI();
+
     // // Create the NPCS
     // this.initializeNPCs();
     // Subscribe to relevant events
@@ -132,14 +160,46 @@ export default class Level4 extends HW4Scene {
     this.receiver.subscribe(BattlerEvent.PAUSE);
     // Create and add the pause layer
     this.pauseLayer = new Layer(this, "pauseLayer");
-    this.pauseLayer = this.addLayer('pauseLayer', 100);
+    this.pauseLayer = this.addLayer('pauseLayer', 99);
+
     // Now, let's create a pause screen sprite and add it to the pause layer
     this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
     this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
     this.pauseLayer.addNode(this.pauseScreenSprite);
-    this.pauseScreenSprite.scale.set(0.8, 0.8);
+    this.pauseScreenSprite.scale.set(0.4, 0.4);
     this.pauseLayer.setHidden(true); // Hide the layer initially
-    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music", loop: true, holdReference: true });
+
+    //create control screen
+    this.controlLayer = new Layer(this, "controlLayer");
+    this.controlLayer = this.addLayer('controlLayer', 100);
+    // Now, let's create a control screen sprite and add it to the control screen layer
+    this.controlScreenSprite = this.add.sprite("controlsScreen", "controlLayer");
+    this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.controlLayer.addNode(this.controlScreenSprite);
+    this.controlScreenSprite.scale.set(0.4, 0.4);
+    this.controlLayer.setHidden(true); // Hide the layer initially
+
+    //create level selection screen
+    this.levelSelectionLayer = new Layer(this, "levelSelectionLayer");
+    this.levelSelectionLayer = this.addLayer('levelSelectionLayer', 100);
+    // Now, let's create a level selection screen sprite and add it to the level selection screen layer
+    this.levelSelectionScreenSprite = this.add.sprite("levelSelectionScreen", "levelSelectionLayer");
+    this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.levelSelectionLayer.addNode(this.levelSelectionScreenSprite);
+    this.levelSelectionScreenSprite.scale.set(0.4, 0.4);
+    this.levelSelectionLayer.setHidden(true); // Hide the layer initially
+
+    //create help screen
+    this.helpLayer = new Layer(this, "helpLayer");
+    this.helpLayer = this.addLayer('helpLayer', 100);
+    // Now, let's create a help screen sprite and add it to the help screen layer
+    this.helpScreenSprite = this.add.sprite("helpScreen", "helpLayer");
+    this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.helpLayer.addNode(this.helpScreenSprite);
+    this.helpScreenSprite.scale.set(0.4, 0.4);
+    this.helpLayer.setHidden(true); // Hide the layer initially
+
+    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music4", loop: true, holdReference: true });
   }
 
   /**
@@ -147,33 +207,86 @@ export default class Level4 extends HW4Scene {
    */
   public override updateScene(deltaT: number): void {
     while (this.receiver.hasNextEvent()) {
-        this.handleEvent(this.receiver.getNextEvent());}
+        this.handleEvent(this.receiver.getNextEvent());
+    }
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     if (Input.isKeyJustPressed("p")) {
         this.emitter.fireEvent(BattlerEvent.PAUSE);
-        console.log("MainHW4Scene has detected a p press");};
+        console.log("MainHW4Scene has detected a p press");
+    };
+    if (this.GameIsPaused) {
+      if (Input.isKeyJustPressed("c")) {
+          if (this.controlLayer.isHidden()) {
+              this.controlLayer.setHidden(false);
+              this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          } else {
+              this.controlLayer.setHidden(true);
+          }
+          console.log("MainHW4Scene has detected a C press");
+      };
+  }
+  if (this.GameIsPaused) {
+    if (Input.isKeyJustPressed("x")) {
+        if (this.levelSelectionLayer.isHidden()) {
+            this.levelSelectionLayer.setHidden(false);
+            this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        } else {
+            this.levelSelectionLayer.setHidden(true);
+        }
+        console.log("MainHW4Scene has detected a x press");
+    };
+  }
+  if (this.GameIsPaused) {
+    if (Input.isKeyJustPressed("v")) {
+        if (this.helpLayer.isHidden()) {
+            this.helpLayer.setHidden(false);
+            this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        } else {
+            this.helpLayer.setHidden(true);
+        }
+        console.log("MainHW4Scene has detected a v press");
+    };
+  }
+  if(this.GameIsPaused){
+    this.initializeNPCsBool=false;
+  }else{
+    this.initializeNPCsBool=true;
+  }
     this.chasePlayer();
     if (Input.isKeyJustPressed("1")) {
         console.log("1 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level1);};
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.sceneManager.changeToScene(Level1);
+    };
     if (Input.isKeyJustPressed("2")) {
         console.log("2 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level2);};
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.sceneManager.changeToScene(Level2);
+    };
     if (Input.isKeyJustPressed("3")) {
         console.log("3 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level3);};
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.sceneManager.changeToScene(Level3);
+    };
     if (Input.isKeyJustPressed("4")) {
         console.log("4 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level4);};
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.sceneManager.changeToScene(Level4);
+    };
+    if (Input.isKeyJustPressed("m")) {
+      console.log("1 has been pressed.");
+      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+      
+      this.sceneManager.changeToScene(MainMenu);
+      
+    };
     if (Input.isKeyJustPressed("0")) {
-        this.initializeNPCsBool = true;};
+        this.initializeNPCsBool = true;
+    };
     if (Input.isKeyJustPressed("f")) {
         // Restore player's health to maximum
-        this.player.health = this.player.maxHealth;}
+        this.player.health = this.player.maxHealth;
+    }
     // Check if the 'i' key is pressed
     if (Input.isKeyJustPressed("i")) {
         // Toggle the flag to indicate increased health
@@ -194,73 +307,142 @@ export default class Level4 extends HW4Scene {
             }
         }
     }
-    if (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d")) {
-      console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
-      if (!this.isWalkingSoundPlaying) {
-          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
-          this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
-      }
-  } else {
-      // Check if any of the movement keys are currently down to continue playing the sound
-      if (!Input.isKeyPressed("w") && !Input.isKeyPressed("a") && !Input.isKeyPressed("s") && !Input.isKeyPressed("d")) {
-          if (this.isWalkingSoundPlaying) {
-              this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
-              this.isWalkingSoundPlaying = false; // Update the flag when the sound is stopped
-          }
-      }
-  }
-    if (this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled) {
-        this.initializeNPCsAlreadyCalled = true;
+    if (!this.GameIsPaused && (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d"))) {
+        console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
+        if (!this.isWalkingSoundPlaying) {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
+            this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
+        }
+    } else {
+        // Check if any of the movement keys are currently down to continue playing the sound
+        if (!Input.isKeyPressed("w") && !Input.isKeyPressed("a") && !Input.isKeyPressed("s") && !Input.isKeyPressed("d")) {
+            if (this.isWalkingSoundPlaying) {
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+                this.isWalkingSoundPlaying = false; // Update the flag when the sound is stopped
+            }
+        }
+    }
+    if (!this.GameIsPaused && Input.isMouseJustPressed(0)) {
+        // Play the attack sound
+        this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+    }
+    if (this.initializeNPCsBool) {
+      // Existing code...
+      // this.npcInitTimer += deltaT;
+      // if (this.npcInitTimer >= this.npcInitInterval) {
+      //   this.initializeNPCs();
+      //   this.npcInitTimer = 0; // Reset the timer after initializing NPCs
+      // }
+      // Decrease npcInitTimer by the amount of time that has passed
+      this.npcInitTimer -= deltaT;
+      // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
+      if (this.npcInitTimer <= 0) {
         this.initializeNPCs();
+        // Reset npcInitTimer back to npcInitInterval
+        this.npcInitTimer = this.npcInitInterval;
+      }
+      // ... rest of the update function ...
     }
 }
+  // protected chasePlayer(): void {
+  //   console.log("enterChase called");
+  //   // Assuming enemy battlers are identified by a certain battleGroup value
+  //   const enemyBattleGroup = 1;  // This is just an example, adjust as needed.
+  //   console.log("Enemy battle group: ", enemyBattleGroup);
+  //   // First, check if this.player is defined and has a position property.
+  //   if (!this.player || !this.player.position) {
+  //     console.log("Player or player position is not defined.");
+  //     return; // Exit the function if player or player's position is undefined or null.
+  //   }
+  //   this.battlers.forEach((battler, index) => {
+  //     console.log(`Processing battler ${index + 1}/${this.battlers.length}`);
+  //     //In enterChase() method, when trying to access this.player.position, it saids that position is undefined
+  //     if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
+  //       console.log("Battler is defined and has a position.");
+  //       console.log("Battler Position:" + battler.position);
+  //       console.log("this.player.position:" + this.player.position);
+  //       const distanceToPlayer = battler.position.distanceTo(this.player.position);
+  //       console.log(`Distance to player: ${distanceToPlayer}`);
+  //       //if (distanceToPlayer < 50) {
+  //         if (true) {
+  //         this.isFollowingPlayer = true;
+  //         console.log("Player seen, starting chase.");
+  //         // Adjust enemy's x position
+  //         if (battler.position.x > this.player.position.x) {
+  //           battler.position.x -= 0.2;
+  //           console.log(`Moving battler left to x=${battler.position.x}`);
+  //         } else {
+  //           battler.position.x += 0.2;
+  //           console.log(`Moving battler right to x=${battler.position.x}`);
+  //         }
+  //         // Adjust enemy's y position
+  //         if (battler.position.y > this.player.position.y) {
+  //           battler.position.y -= 0.2;
+  //           console.log(`Moving battler up to y=${battler.position.y}`);
+  //         } else {
+  //           battler.position.y += 0.2;
+  //           console.log(`Moving battler down to y=${battler.position.y}`);
+  //         }
+  //       } 
+  //     } else {
+  //       console.log("Battler is undefined, or does not have a position, or is not an enemy.");
+  //     }
+  //   });
+  // }
 
   protected chasePlayer(): void {
-    console.log("enterChase called");
-    // Assuming enemy battlers are identified by a certain battleGroup value
-    const enemyBattleGroup = 1;  // This is just an example, adjust as needed.
-    console.log("Enemy battle group: ", enemyBattleGroup);
-    // First, check if this.player is defined and has a position property.
+    // First, check if the game is paused
+    if (this.GameIsPaused) {
+      return; // If paused, exit the function
+    }
+
+    // Next, check if this.player is defined and has a position property.
     if (!this.player || !this.player.position) {
-      console.log("Player or player position is not defined.");
       return; // Exit the function if player or player's position is undefined or null.
     }
+
+    // Define different minimum distances and speeds for each enemy battle group
+    const enemyAttributes = {
+      1: { minDistance: 15, speed: 0.65 },  // Attributes for enemy battle group 1
+      2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
+      3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
+    };
+
     this.battlers.forEach((battler, index) => {
-      console.log(`Processing battler ${index + 1}/${this.battlers.length}`);
-      //In enterChase() method, when trying to access this.player.position, it saids that position is undefined
-      if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
-        console.log("Battler is defined and has a position.");
-        console.log("Battler Position:" + battler.position);
-        console.log("this.player.position:" + this.player.position);
-        const distanceToPlayer = battler.position.distanceTo(this.player.position);
-        console.log(`Distance to player: ${distanceToPlayer}`);
-        //if (distanceToPlayer < 50) {
-          if (true) {
-          this.isFollowingPlayer = true;
-          console.log("Player seen, starting chase.");
-          // Adjust enemy's x position
-          if (battler.position.x > this.player.position.x) {
-            battler.position.x -= 0.2;
-            console.log(`Moving battler left to x=${battler.position.x}`);
-          } else {
-            battler.position.x += 0.2;
-            console.log(`Moving battler right to x=${battler.position.x}`);
+      if (battler && battler.position) {
+        // Determine the enemy battle group
+        const enemyBattleGroup = battler.battleGroup;
+        // Check if the enemy battle group is valid and has defined attributes
+        if (enemyBattleGroup in enemyAttributes) {
+          // Get the attributes for the current enemy battle group
+          const attributes = enemyAttributes[enemyBattleGroup];
+          const minDistance = attributes.minDistance;
+          const speed = attributes.speed;
+
+          // Calculate the direction vector towards the player
+          const direction = this.player.position.clone().sub(battler.position).normalize();
+          // Adjust enemy's position based on the direction and speed
+          battler.position.add(direction.scaled(speed));
+
+          // Check for collisions with other enemies
+          for (let otherBattler of this.battlers) {
+            if (otherBattler !== battler && otherBattler.position) {
+              const distanceToOther = battler.position.distanceTo(otherBattler.position);
+              if (distanceToOther < minDistance) {
+                // If too close, adjust the position away from the other enemy
+                const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
+                battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
+              }
+            }
           }
-          // Adjust enemy's y position
-          if (battler.position.y > this.player.position.y) {
-            battler.position.y -= 0.2;
-            console.log(`Moving battler up to y=${battler.position.y}`);
-          } else {
-            battler.position.y += 0.2;
-            console.log(`Moving battler down to y=${battler.position.y}`);
-          }
-        } 
-      } else {
-        console.log("Battler is undefined, or does not have a position, or is not an enemy.");
+        } else {
+          console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
+        }
       }
     });
   }
-  
+
+
   /**
    * Handle events from the rest of the game
    * @param event a game event
@@ -285,6 +467,7 @@ export default class Level4 extends HW4Scene {
           });
           this.GameIsPaused = !this.GameIsPaused;
           this.pauseLayer.setHidden(false);
+          this.uiLayer.setHidden(true);
           const center = this.viewport.getCenter();
           this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
         } else {
@@ -296,6 +479,7 @@ export default class Level4 extends HW4Scene {
           this.GameIsPaused = !this.GameIsPaused;
           //this.pauseScreenSprite.visible=false;
           this.pauseLayer.setHidden(true);
+          this.uiLayer.setHidden(false);
         }
         break
       }
@@ -328,11 +512,93 @@ export default class Level4 extends HW4Scene {
     }
   }
 
+  protected addUI() {
+    // In-game labels
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(80, 30), text: "Level 4" });
+
+    this.levelLabel.textColor = Color.WHITE
+    this.levelLabel.font = "PixelSimple";
+    this.uiLayer = this.getLayer("UI");
+    this.uiLayer.addNode(this.levelLabel);
+
+    /*
+
+    this.switchLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(80, 50), text: "Switches Left: " + (this.totalSwitches - this.switchesPressed)});
+    this.switchLabel.textColor = Color.BLACK;
+    this.switchLabel.font = "PixelSimple";
+
+    this.livesCountLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(500, 30), text: "Lives: " + GameLevel.livesCount});
+    this.livesCountLabel.textColor = Color.BLACK;
+    this.livesCountLabel.font = "PixelSimple";
+
+    // End of level label (start off screen)
+    this.levelEndLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(-300, 200), text: "Level Complete"});
+    this.levelEndLabel.size.set(1200, 60);
+    this.levelEndLabel.borderRadius = 0;
+    this.levelEndLabel.backgroundColor = new Color(34, 32, 52);
+    this.levelEndLabel.textColor = Color.WHITE;
+    this.levelEndLabel.fontSize = 48;
+    this.levelEndLabel.font = "PixelSimple";
+
+    // Add a tween to move the label on screen
+    this.levelEndLabel.tweens.add("slideIn", {
+        startDelay: 0,
+        duration: 1000,
+        effects: [
+            {
+                property: TweenableProperties.posX,
+                start: -300,
+                end: 300,
+                ease: EaseFunctionType.OUT_SINE
+            }
+        ]
+    });
+
+    // Create our particle system and initialize the pool
+    this.system = new HW5_ParticleSystem(100, new Vec2((5 * 32), (10 * 32)), 2000, 3, 1, 100);
+    this.system.initializePool(this, "primary");
+
+    this.levelTransitionScreen = <Rect>this.add.graphic(GraphicType.RECT, "UI", {position: new Vec2(300, 200), size: new Vec2(600, 400)});
+    this.levelTransitionScreen.color = new Color(34, 32, 52);
+    this.levelTransitionScreen.alpha = 1;
+
+    this.levelTransitionScreen.tweens.add("fadeIn", {
+        startDelay: 0,
+        duration: 1000,
+        effects: [
+            {
+                property: TweenableProperties.alpha,
+                start: 0,
+                end: 1,
+                ease: EaseFunctionType.IN_OUT_QUAD
+            }
+        ],
+        onEnd: HW5_Events.LEVEL_END
+    });
+
+    this.levelTransitionScreen.tweens.add("fadeOut", {
+        startDelay: 0,
+        duration: 1000,
+        effects: [
+            {
+                property: TweenableProperties.alpha,
+                start: 1,
+                end: 0,
+                ease: EaseFunctionType.IN_OUT_QUAD
+            }
+        ],
+        onEnd: HW5_Events.LEVEL_START
+    });
+    */
+  }
+
   /** Initializes the layers in the scene */
   protected initLayers(): void {
+
     this.addLayer("primary", 10);
     this.addUILayer("slots");
     this.addUILayer("items");
+    this.addUILayer("UI");
     this.getLayer("slots").setDepth(1);
     this.getLayer("items").setDepth(2);
   }
@@ -343,12 +609,16 @@ export default class Level4 extends HW4Scene {
     this.player.battleGroup = 2;
     this.player.health = 100;
     this.player.maxHealth = 1000;
-    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED
+    this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED;
+
+    // Increase the player's speed
+    this.player.speed *= 20; // Double the player's speed
+
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
     let healthbar = new HealthbarHUD(this, this.player, "primary", { size: this.player.size.clone().scaled(2, 1 / 2), offset: this.player.size.clone().scaled(0, -1 / 2) });
-    this.healthbars.set(this.player.id, healthbar); 
+    this.healthbars.set(this.player.id, healthbar);
     // Give the player PlayerAI
     this.player.addAI(PlayerAI);
     // Start the player in the "IDLE" animation
@@ -357,15 +627,79 @@ export default class Level4 extends HW4Scene {
     this.viewport.follow(this.player);
   }
 
-  /**
+    /**
    * Initialize the NPCs 
    */
+  // protected initializeNPCs(): void {
+  //   // Get the object data for the red enemies
+  //   let red = this.load.getObject("red");
+  //   // Initialize the red healers
+  //   for (let i = 0; i < red.healers.length; i++) {
+  //     let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
+  //     npc.position.set(red.healers[i][0], red.healers[i][1]);
+  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+  //     npc.battleGroup = 1;
+  //     npc.speed = 40;
+  //     npc.health = 20;
+  //     npc.maxHealth = 20;
+  //     npc.navkey = "navmesh";
+  //     // Give the NPC a healthbar
+  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+  //     this.healthbars.set(npc.id, healthbar);
+  //     npc.addAI(HealerBehavior);
+  //     npc.animation.play("IDLE");
+  //     this.battlers.push(npc);
+  //   }
+
+  //   for (let i = 0; i < red.enemies.length; i++) {
+  //     let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
+  //     npc.position.set(red.enemies[i][0], red.enemies[i][1]);
+  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+  //     // Give the NPC a healthbar
+  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+  //     this.healthbars.set(npc.id, healthbar);
+  //     // Set the NPCs stats
+  //     npc.battleGroup = 1
+  //     npc.speed = 20;
+  //     npc.health = 50;
+  //     npc.maxHealth = 50;
+  //     npc.navkey = "navmesh";
+  //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
+  //     // Play the NPCs "IDLE" animation 
+  //     npc.animation.play("IDLE");
+  //     // Add the NPC to the battlers array
+  //     this.battlers.push(npc);
+  //   }
+
+  //   for (let i = 0; i < red.demon.length; i++) {
+  //     let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
+  //     npc.position.set(red.demon[i][0], red.demon[i][1]);
+  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+  //     // Give the NPC a healthbar
+  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+  //     this.healthbars.set(npc.id, healthbar);
+  //     // Set the NPCs stats
+  //     npc.battleGroup = 1
+  //     npc.speed = 15;
+  //     npc.health = 100;
+  //     npc.maxHealth = 100;
+  //     npc.navkey = "navmesh";
+  //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
+  //     // Play the NPCs "IDLE" animation 
+  //     npc.animation.play("IDLE");
+  //     // Add the NPC to the battlers array
+  //     this.battlers.push(npc);
+  //   }
+  // }
+
   protected initializeNPCs(): void {
+
+    console.log("initializeNPCs has been called");
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
     // Initialize the red healers
     for (let i = 0; i < red.healers.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "RedHealer", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
       npc.position.set(red.healers[i][0], red.healers[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       npc.battleGroup = 1;
@@ -382,14 +716,14 @@ export default class Level4 extends HW4Scene {
     }
 
     for (let i = 0; i < red.enemies.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "RedEnemy", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
       npc.position.set(red.enemies[i][0], red.enemies[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       // Give the NPC a healthbar
       let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
-      npc.battleGroup = 1
+      npc.battleGroup = 2
       npc.speed = 10;
       npc.health = 50;
       npc.maxHealth = 50;
@@ -402,14 +736,14 @@ export default class Level4 extends HW4Scene {
     }
 
     for (let i = 0; i < red.demon.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "player1", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
       npc.position.set(red.demon[i][0], red.demon[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       // Give the NPC a healthbar
       let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
       this.healthbars.set(npc.id, healthbar);
       // Set the NPCs stats
-      npc.battleGroup = 1
+      npc.battleGroup = 3
       npc.speed = 10;
       npc.health = 100;
       npc.maxHealth = 100;
@@ -525,7 +859,8 @@ export default class Level4 extends HW4Scene {
     // Select A* as our navigation strategy
     navmesh.setStrategy("astar");
     // Add this navmesh to the navigation manager
-    this.navManager.addNavigableEntity("navmesh", navmesh); }
+    this.navManager.addNavigableEntity("navmesh", navmesh);
+  }
   public getBattlers(): Battler[] { return this.battlers; }
   public getWalls(): OrthogonalTilemap { return this.walls; }
   public getHealthpacks(): Healthpack[] { return this.healthpacks; }

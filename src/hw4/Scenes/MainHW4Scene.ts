@@ -86,7 +86,7 @@ export default class MainHW4Scene extends HW4Scene {
   private uiLayer: Layer;
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
-  private npcInitInterval: number = 2; // Interval in seconds to initialize NPCs
+  private npcInitInterval: number = 15; // Interval in seconds to initialize NPCs
 
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
@@ -118,13 +118,13 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
     this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
     this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
-    this.load.audio("music", "hw4_assets/music/music.wav");
+    this.load.audio("music4", "hw4_assets/music/music4.wav");
     this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
-    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
-    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
-    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen1.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen1.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen1.png");
   }
 
   /**
@@ -199,7 +199,7 @@ export default class MainHW4Scene extends HW4Scene {
     this.helpScreenSprite.scale.set(0.4, 0.4);
     this.helpLayer.setHidden(true); // Hide the layer initially
 
-    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music", loop: true, holdReference: true });
+    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music4", loop: true, holdReference: true });
   }
 
   /**
@@ -247,30 +247,35 @@ export default class MainHW4Scene extends HW4Scene {
         console.log("MainHW4Scene has detected a v press");
     };
   }
+  if(this.GameIsPaused){
+    this.initializeNPCsBool=false;
+  }else{
+    this.initializeNPCsBool=true;
+  }
     this.chasePlayer();
     if (Input.isKeyJustPressed("1")) {
         console.log("1 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
         this.sceneManager.changeToScene(Level1);
     };
     if (Input.isKeyJustPressed("2")) {
         console.log("2 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
         this.sceneManager.changeToScene(Level2);
     };
     if (Input.isKeyJustPressed("3")) {
         console.log("3 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
         this.sceneManager.changeToScene(Level3);
     };
     if (Input.isKeyJustPressed("4")) {
         console.log("4 has been pressed.");
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
         this.sceneManager.changeToScene(Level4);
     };
     if (Input.isKeyJustPressed("m")) {
       console.log("1 has been pressed.");
-      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
+      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
       
       this.sceneManager.changeToScene(MainMenu);
       
