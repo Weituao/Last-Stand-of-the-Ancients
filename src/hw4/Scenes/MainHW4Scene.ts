@@ -45,11 +45,21 @@ import Level3 from "./Level3";
 import Level4 from "./Level4";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
+import MainMenu from "./MainMenu";
 
 export default class MainHW4Scene extends HW4Scene {
   protected invincibilityTimer: Timer | null = null;
   private pauseScreenSprite: Sprite;
+  private controlScreenSprite: Sprite;
+  private levelSelectionScreenSprite: Sprite;
+  private helpScreenSprite: Sprite;
+
+
   private pauseLayer: Layer;
+  private controlLayer: Layer;
+  private levelSelectionLayer: Layer;
+  private helpLayer: Layer;
+
   /** GameSystems in the HW4 Scene */
   /** All the battlers in the HW4Scene (including the player) */
   private battlers: (Battler & Actor)[];
@@ -72,6 +82,12 @@ export default class MainHW4Scene extends HW4Scene {
   private increasedHealth: boolean | null = null;
   private originalMaxHealth: number | null = null;
   protected levelLabel: Label;
+
+  private uiLayer: Layer;
+
+  private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
+  private npcInitInterval: number = 2; // Interval in seconds to initialize NPCs
+
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
@@ -106,6 +122,9 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
   }
 
   /**
@@ -141,13 +160,45 @@ export default class MainHW4Scene extends HW4Scene {
     this.receiver.subscribe(BattlerEvent.PAUSE);
     // Create and add the pause layer
     this.pauseLayer = new Layer(this, "pauseLayer");
-    this.pauseLayer = this.addLayer('pauseLayer', 100);
+    this.pauseLayer = this.addLayer('pauseLayer', 99);
+
     // Now, let's create a pause screen sprite and add it to the pause layer
     this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
     this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
     this.pauseLayer.addNode(this.pauseScreenSprite);
     this.pauseScreenSprite.scale.set(0.4, 0.4);
     this.pauseLayer.setHidden(true); // Hide the layer initially
+
+    //create control screen
+    this.controlLayer = new Layer(this, "controlLayer");
+    this.controlLayer = this.addLayer('controlLayer', 100);
+    // Now, let's create a control screen sprite and add it to the control screen layer
+    this.controlScreenSprite = this.add.sprite("controlsScreen", "controlLayer");
+    this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.controlLayer.addNode(this.controlScreenSprite);
+    this.controlScreenSprite.scale.set(0.4, 0.4);
+    this.controlLayer.setHidden(true); // Hide the layer initially
+
+    //create level selection screen
+    this.levelSelectionLayer = new Layer(this, "levelSelectionLayer");
+    this.levelSelectionLayer = this.addLayer('levelSelectionLayer', 100);
+    // Now, let's create a level selection screen sprite and add it to the level selection screen layer
+    this.levelSelectionScreenSprite = this.add.sprite("levelSelectionScreen", "levelSelectionLayer");
+    this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.levelSelectionLayer.addNode(this.levelSelectionScreenSprite);
+    this.levelSelectionScreenSprite.scale.set(0.4, 0.4);
+    this.levelSelectionLayer.setHidden(true); // Hide the layer initially
+
+    //create help screen
+    this.helpLayer = new Layer(this, "helpLayer");
+    this.helpLayer = this.addLayer('helpLayer', 100);
+    // Now, let's create a help screen sprite and add it to the help screen layer
+    this.helpScreenSprite = this.add.sprite("helpScreen", "helpLayer");
+    this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.helpLayer.addNode(this.helpScreenSprite);
+    this.helpScreenSprite.scale.set(0.4, 0.4);
+    this.helpLayer.setHidden(true); // Hide the layer initially
+
     this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music", loop: true, holdReference: true });
   }
 
@@ -156,33 +207,81 @@ export default class MainHW4Scene extends HW4Scene {
    */
   public override updateScene(deltaT: number): void {
     while (this.receiver.hasNextEvent()) {
-        this.handleEvent(this.receiver.getNextEvent());}
+        this.handleEvent(this.receiver.getNextEvent());
+    }
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     if (Input.isKeyJustPressed("p")) {
         this.emitter.fireEvent(BattlerEvent.PAUSE);
-        console.log("MainHW4Scene has detected a p press");};
+        console.log("MainHW4Scene has detected a p press");
+    };
+    if (this.GameIsPaused) {
+      if (Input.isKeyJustPressed("c")) {
+          if (this.controlLayer.isHidden()) {
+              this.controlLayer.setHidden(false);
+              this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          } else {
+              this.controlLayer.setHidden(true);
+          }
+          console.log("MainHW4Scene has detected a C press");
+      };
+  }
+  if (this.GameIsPaused) {
+    if (Input.isKeyJustPressed("x")) {
+        if (this.levelSelectionLayer.isHidden()) {
+            this.levelSelectionLayer.setHidden(false);
+            this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        } else {
+            this.levelSelectionLayer.setHidden(true);
+        }
+        console.log("MainHW4Scene has detected a x press");
+    };
+  }
+  if (this.GameIsPaused) {
+    if (Input.isKeyJustPressed("v")) {
+        if (this.helpLayer.isHidden()) {
+            this.helpLayer.setHidden(false);
+            this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        } else {
+            this.helpLayer.setHidden(true);
+        }
+        console.log("MainHW4Scene has detected a v press");
+    };
+  }
     this.chasePlayer();
     if (Input.isKeyJustPressed("1")) {
         console.log("1 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level1);};
+        this.sceneManager.changeToScene(Level1);
+    };
     if (Input.isKeyJustPressed("2")) {
         console.log("2 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level2);};
+        this.sceneManager.changeToScene(Level2);
+    };
     if (Input.isKeyJustPressed("3")) {
         console.log("3 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level3);};
+        this.sceneManager.changeToScene(Level3);
+    };
     if (Input.isKeyJustPressed("4")) {
         console.log("4 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
-        this.sceneManager.changeToScene(Level4);};
+        this.sceneManager.changeToScene(Level4);
+    };
+    if (Input.isKeyJustPressed("m")) {
+      console.log("1 has been pressed.");
+      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music" });
+      
+      this.sceneManager.changeToScene(MainMenu);
+      
+    };
     if (Input.isKeyJustPressed("0")) {
-        this.initializeNPCsBool = true;};
+        this.initializeNPCsBool = true;
+    };
     if (Input.isKeyJustPressed("f")) {
         // Restore player's health to maximum
-        this.player.health = this.player.maxHealth;}
+        this.player.health = this.player.maxHealth;
+    }
     // Check if the 'i' key is pressed
     if (Input.isKeyJustPressed("i")) {
         // Toggle the flag to indicate increased health
@@ -204,30 +303,42 @@ export default class MainHW4Scene extends HW4Scene {
         }
     }
     if (!this.GameIsPaused && (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d"))) {
-      console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
-      if (!this.isWalkingSoundPlaying) {
-          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
-          this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
-      }
-  } else {
-      // Check if any of the movement keys are currently down to continue playing the sound
-      if (!Input.isKeyPressed("w") && !Input.isKeyPressed("a") && !Input.isKeyPressed("s") && !Input.isKeyPressed("d")) {
-          if (this.isWalkingSoundPlaying) {
-              this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
-              this.isWalkingSoundPlaying = false; // Update the flag when the sound is stopped
-          }
-      }
-  }
-  if (Input.isMouseJustPressed(0)) {
-    // Play the attack sound
-    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
-}
-    if (this.initializeNPCsBool && !this.initializeNPCsAlreadyCalled) {
-        this.initializeNPCsAlreadyCalled = true;
+        console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
+        if (!this.isWalkingSoundPlaying) {
+            this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
+            this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
+        }
+    } else {
+        // Check if any of the movement keys are currently down to continue playing the sound
+        if (!Input.isKeyPressed("w") && !Input.isKeyPressed("a") && !Input.isKeyPressed("s") && !Input.isKeyPressed("d")) {
+            if (this.isWalkingSoundPlaying) {
+                this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+                this.isWalkingSoundPlaying = false; // Update the flag when the sound is stopped
+            }
+        }
+    }
+    if (!this.GameIsPaused && Input.isMouseJustPressed(0)) {
+        // Play the attack sound
+        this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+    }
+    if (this.initializeNPCsBool) {
+      // Existing code...
+      // this.npcInitTimer += deltaT;
+      // if (this.npcInitTimer >= this.npcInitInterval) {
+      //   this.initializeNPCs();
+      //   this.npcInitTimer = 0; // Reset the timer after initializing NPCs
+      // }
+      // Decrease npcInitTimer by the amount of time that has passed
+      this.npcInitTimer -= deltaT;
+      // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
+      if (this.npcInitTimer <= 0) {
         this.initializeNPCs();
+        // Reset npcInitTimer back to npcInitInterval
+        this.npcInitTimer = this.npcInitInterval;
+      }
+      // ... rest of the update function ...
     }
 }
-
   // protected chasePlayer(): void {
   //   console.log("enterChase called");
   //   // Assuming enemy battlers are identified by a certain battleGroup value
@@ -277,54 +388,54 @@ export default class MainHW4Scene extends HW4Scene {
   protected chasePlayer(): void {
     // First, check if the game is paused
     if (this.GameIsPaused) {
-        return; // If paused, exit the function
+      return; // If paused, exit the function
     }
 
     // Next, check if this.player is defined and has a position property.
     if (!this.player || !this.player.position) {
-        return; // Exit the function if player or player's position is undefined or null.
+      return; // Exit the function if player or player's position is undefined or null.
     }
 
     // Define different minimum distances and speeds for each enemy battle group
     const enemyAttributes = {
-        1: { minDistance: 15, speed: 0.65 },  // Attributes for enemy battle group 1
-        2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
-        3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
+      1: { minDistance: 15, speed: 0.65 },  // Attributes for enemy battle group 1
+      2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
+      3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
     };
 
     this.battlers.forEach((battler, index) => {
-        if (battler && battler.position) {
-            // Determine the enemy battle group
-            const enemyBattleGroup = battler.battleGroup;
-            // Check if the enemy battle group is valid and has defined attributes
-            if (enemyBattleGroup in enemyAttributes) {
-                // Get the attributes for the current enemy battle group
-                const attributes = enemyAttributes[enemyBattleGroup];
-                const minDistance = attributes.minDistance;
-                const speed = attributes.speed;
-                
-                // Calculate the direction vector towards the player
-                const direction = this.player.position.clone().sub(battler.position).normalize();
-                // Adjust enemy's position based on the direction and speed
-                battler.position.add(direction.scaled(speed));
+      if (battler && battler.position) {
+        // Determine the enemy battle group
+        const enemyBattleGroup = battler.battleGroup;
+        // Check if the enemy battle group is valid and has defined attributes
+        if (enemyBattleGroup in enemyAttributes) {
+          // Get the attributes for the current enemy battle group
+          const attributes = enemyAttributes[enemyBattleGroup];
+          const minDistance = attributes.minDistance;
+          const speed = attributes.speed;
 
-                // Check for collisions with other enemies
-                for (let otherBattler of this.battlers) {
-                    if (otherBattler !== battler && otherBattler.position) {
-                        const distanceToOther = battler.position.distanceTo(otherBattler.position);
-                        if (distanceToOther < minDistance) {
-                            // If too close, adjust the position away from the other enemy
-                            const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
-                            battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
-                        }
-                    }
-                }
-            } else {
-                console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
+          // Calculate the direction vector towards the player
+          const direction = this.player.position.clone().sub(battler.position).normalize();
+          // Adjust enemy's position based on the direction and speed
+          battler.position.add(direction.scaled(speed));
+
+          // Check for collisions with other enemies
+          for (let otherBattler of this.battlers) {
+            if (otherBattler !== battler && otherBattler.position) {
+              const distanceToOther = battler.position.distanceTo(otherBattler.position);
+              if (distanceToOther < minDistance) {
+                // If too close, adjust the position away from the other enemy
+                const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
+                battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
+              }
             }
+          }
+        } else {
+          console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
         }
+      }
     });
-}
+  }
 
 
   /**
@@ -351,6 +462,7 @@ export default class MainHW4Scene extends HW4Scene {
           });
           this.GameIsPaused = !this.GameIsPaused;
           this.pauseLayer.setHidden(false);
+          this.uiLayer.setHidden(true);
           const center = this.viewport.getCenter();
           this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
         } else {
@@ -362,6 +474,7 @@ export default class MainHW4Scene extends HW4Scene {
           this.GameIsPaused = !this.GameIsPaused;
           //this.pauseScreenSprite.visible=false;
           this.pauseLayer.setHidden(true);
+          this.uiLayer.setHidden(false);
         }
         break
       }
@@ -394,12 +507,14 @@ export default class MainHW4Scene extends HW4Scene {
     }
   }
 
-  protected addUI(){
+  protected addUI() {
     // In-game labels
-    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(80, 30), text: "Main Level"});
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(80, 30), text: "Main Level" });
 
     this.levelLabel.textColor = Color.WHITE
     this.levelLabel.font = "PixelSimple";
+    this.uiLayer = this.getLayer("UI");
+    this.uiLayer.addNode(this.levelLabel);
 
     /*
 
@@ -470,9 +585,7 @@ export default class MainHW4Scene extends HW4Scene {
         onEnd: HW5_Events.LEVEL_START
     });
     */
-}
-
-
+  }
 
   /** Initializes the layers in the scene */
   protected initLayers(): void {
@@ -500,20 +613,16 @@ export default class MainHW4Scene extends HW4Scene {
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
     let healthbar = new HealthbarHUD(this, this.player, "primary", { size: this.player.size.clone().scaled(2, 1 / 2), offset: this.player.size.clone().scaled(0, -1 / 2) });
-    this.healthbars.set(this.player.id, healthbar); 
+    this.healthbars.set(this.player.id, healthbar);
     // Give the player PlayerAI
     this.player.addAI(PlayerAI);
     // Start the player in the "IDLE" animation
     this.player.animation.play("IDLE");
     this.battlers.push(this.player);
     this.viewport.follow(this.player);
-}
+  }
 
-
-
-
-
-  /**
+    /**
    * Initialize the NPCs 
    */
   // protected initializeNPCs(): void {
@@ -578,10 +687,9 @@ export default class MainHW4Scene extends HW4Scene {
   //   }
   // }
 
-    /**
-   * Initialize the NPCs 
-   */
   protected initializeNPCs(): void {
+
+    console.log("initializeNPCs has been called");
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
     // Initialize the red healers
@@ -642,6 +750,7 @@ export default class MainHW4Scene extends HW4Scene {
       this.battlers.push(npc);
     }
   }
+
   /**
    * Initialize the items in the scene (healthpacks and laser guns)
    */
@@ -745,7 +854,8 @@ export default class MainHW4Scene extends HW4Scene {
     // Select A* as our navigation strategy
     navmesh.setStrategy("astar");
     // Add this navmesh to the navigation manager
-    this.navManager.addNavigableEntity("navmesh", navmesh); }
+    this.navManager.addNavigableEntity("navmesh", navmesh);
+  }
   public getBattlers(): Battler[] { return this.battlers; }
   public getWalls(): OrthogonalTilemap { return this.walls; }
   public getHealthpacks(): Healthpack[] { return this.healthpacks; }
