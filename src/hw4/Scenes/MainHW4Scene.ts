@@ -379,9 +379,7 @@ export default class MainHW4Scene extends HW4Scene {
   );
   const minutes = Math.floor(this.remainingTime / 60);
   const seconds = Math.floor(this.remainingTime % 60);
-  this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(
-      seconds
-  ).padStart(2, "0")}`;
+
   // Show the timer label
   this.timerLabel.visible = true;
 } else {
@@ -435,7 +433,7 @@ export default class MainHW4Scene extends HW4Scene {
   //     }
   //   });
   // }
-  
+
 //   protected chasePlayer(): void {
 //     // Assuming enemy battlers are identified by a certain battleGroup value
 //     const enemyBattleGroup = 1;  // This is just an example, adjust as needed.

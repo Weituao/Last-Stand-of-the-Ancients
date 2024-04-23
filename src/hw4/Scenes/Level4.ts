@@ -378,9 +378,7 @@ export default class Level4 extends HW4Scene {
   );
   const minutes = Math.floor(this.remainingTime / 60);
   const seconds = Math.floor(this.remainingTime % 60);
-  this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(
-      seconds
-  ).padStart(2, "0")}`;
+
   // Show the timer label
   this.timerLabel.visible = true;
 } else {
