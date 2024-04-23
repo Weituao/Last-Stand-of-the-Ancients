@@ -110,9 +110,7 @@ export default class Level3 extends HW4Scene {
   public override loadScene() {
     // Load the player and enemy spritesheets
     this.load.spritesheet("player1", "hw4_assets/spritesheets/player1.json");
-    // Load in the enemy sprites
-    this.load.spritesheet("bat", "hw4_assets/spritesheets/bat.json");
-    this.load.spritesheet("bug", "hw4_assets/spritesheets/bug.json");
+    // Load in the enemy sprite
     this.load.spritesheet("demon", "hw4_assets/spritesheets/demon.json");
     // Load the tilemap
     this.load.tilemap("level", "hw4_assets/tilemaps/HW4Tilemap.json");

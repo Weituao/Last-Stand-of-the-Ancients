@@ -1,6 +1,6 @@
 {
-    "name": "bat",
-    "spriteSheetImage": "bat.png",
+    "name": "demonBat",
+    "spriteSheetImage": "demonBat.png",
     "spriteWidth": 24,
     "spriteHeight": 24,
     "columns": 5,

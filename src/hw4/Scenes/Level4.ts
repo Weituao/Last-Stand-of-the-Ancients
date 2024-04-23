@@ -111,8 +111,8 @@ export default class Level4 extends HW4Scene {
     // Load the player and enemy spritesheets
     this.load.spritesheet("player1", "hw4_assets/spritesheets/player1.json");
     // Load in the enemy sprites
-    this.load.spritesheet("bat", "hw4_assets/spritesheets/bat.json");
-    this.load.spritesheet("bug", "hw4_assets/spritesheets/bug.json");
+    this.load.spritesheet("demonBat", "hw4_assets/spritesheets/demonBat.json");
+    this.load.spritesheet("demonBug", "hw4_assets/spritesheets/demonBug.json");
     this.load.spritesheet("demon", "hw4_assets/spritesheets/demon.json");
     // Load the tilemap
     this.load.tilemap("level", "hw4_assets/tilemaps/HW4Tilemap.json");
@@ -761,7 +761,7 @@ export default class Level4 extends HW4Scene {
     let red = this.load.getObject("red");
     // Initialize the red healers
     for (let i = 0; i < red.healers.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
       npc.position.set(red.healers[i][0], red.healers[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       npc.battleGroup = 1;
@@ -778,7 +778,7 @@ export default class Level4 extends HW4Scene {
     }
 
     for (let i = 0; i < red.enemies.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
+      let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
       npc.position.set(red.enemies[i][0], red.enemies[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       // Give the NPC a healthbar
