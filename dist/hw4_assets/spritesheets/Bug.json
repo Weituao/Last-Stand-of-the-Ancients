@@ -1,6 +1,6 @@
 {
-    "name": "Bug",
-    "spriteSheetImage": "Bug.png",
+    "name": "bug",
+    "spriteSheetImage": "bug.png",
     "spriteWidth": 24,
     "spriteHeight": 24,
     "columns": 5,

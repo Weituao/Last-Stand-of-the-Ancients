@@ -1,6 +1,6 @@
 {
-    "name": "Bat",
-    "spriteSheetImage": "Bat.png",
+    "name": "bat",
+    "spriteSheetImage": "bat.png",
     "spriteWidth": 24,
     "spriteHeight": 24,
     "columns": 5,

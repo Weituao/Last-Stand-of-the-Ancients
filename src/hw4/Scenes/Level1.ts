@@ -73,7 +73,7 @@ export default class Level1 extends HW4Scene {
   private laserguns: Array<LaserGun>;
   // The wall layer of the tilemap
   private walls: OrthogonalTilemap;
-  // The position graph for the navmesh
+  // The position graph for the navmesh 1
   private graph: PositionGraph;
   private GameIsPaused: boolean = false;
   private player: PlayerActor;  // Add this line if it's missing
