@@ -46,6 +46,10 @@ import Level4 from "./Level4";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import MainMenu from "./MainMenu";
+import StartMenu from "./StartMenu";
+import GameOver from "./GameOver";
+import Controls from "./Controls";
+import Button from "../../Wolfie2D/Nodes/UIElements/Button";
 
 export default class MainHW4Scene extends HW4Scene {
   protected invincibilityTimer: Timer | null = null;
@@ -84,9 +88,13 @@ export default class MainHW4Scene extends HW4Scene {
   protected levelLabel: Label;
 
   private uiLayer: Layer;
+  private countDownTimer: Timer;
+  private timerLabel: Label;
+  private elapsedTime: number;
+  private remainingTime: number;
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
-  private npcInitInterval: number = 15; // Interval in seconds to initialize NPCs
+  private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
 
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
@@ -131,6 +139,12 @@ export default class MainHW4Scene extends HW4Scene {
    * @see Scene.startScene
    */
   public override startScene() {
+
+    this.elapsedTime = 0;
+    this.remainingTime = 120 * 1000;
+    this.countDownTimer = new Timer(0);
+    this.countDownTimer.start();
+
     // Add in the tilemap
     let tilemapLayers = this.add.tilemap("level");
     // Get the wall layer
@@ -247,6 +261,15 @@ export default class MainHW4Scene extends HW4Scene {
         console.log("MainHW4Scene has detected a v press");
     };
   }
+  if (this.GameIsPaused) {
+    if (Input.isKeyJustPressed("m")) {
+    console.log("1 has been pressed.");
+    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+    this.viewport.getHalfSize().scale(3.5);
+    this.sceneManager.changeToScene(MainMenu);
+  };
+}
   if(this.GameIsPaused){
     this.initializeNPCsBool=false;
   }else{
@@ -256,29 +279,30 @@ export default class MainHW4Scene extends HW4Scene {
     if (Input.isKeyJustPressed("1")) {
         console.log("1 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+
         this.sceneManager.changeToScene(Level1);
     };
     if (Input.isKeyJustPressed("2")) {
         console.log("2 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+
         this.sceneManager.changeToScene(Level2);
     };
     if (Input.isKeyJustPressed("3")) {
         console.log("3 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+
         this.sceneManager.changeToScene(Level3);
     };
     if (Input.isKeyJustPressed("4")) {
         console.log("4 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+
         this.sceneManager.changeToScene(Level4);
-    };
-    if (Input.isKeyJustPressed("m")) {
-      console.log("1 has been pressed.");
-      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
-      
-      this.sceneManager.changeToScene(MainMenu);
-      
     };
     if (Input.isKeyJustPressed("0")) {
         this.initializeNPCsBool = true;
@@ -343,7 +367,29 @@ export default class MainHW4Scene extends HW4Scene {
       }
       // ... rest of the update function ...
     }
+ // Check if the game is paused
+ if (!this.GameIsPaused) {
+  // Update the timer only if the game is not paused
+  this.countDownTimer.update(deltaT);
+
+  // Update the timer label
+  this.remainingTime = Math.max(
+      this.countDownTimer.getTotalTime() - this.elapsedTime,
+      0
+  );
+  const minutes = Math.floor(this.remainingTime / 60);
+  const seconds = Math.floor(this.remainingTime % 60);
+  this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(
+      seconds
+  ).padStart(2, "0")}`;
+  // Show the timer label
+  this.timerLabel.visible = true;
+} else {
+  // If the game is paused, hide the timer label
+  this.timerLabel.visible = false;
 }
+}
+
   // protected chasePlayer(): void {
   //   console.log("enterChase called");
   //   // Assuming enemy battlers are identified by a certain battleGroup value
@@ -389,6 +435,32 @@ export default class MainHW4Scene extends HW4Scene {
   //     }
   //   });
   // }
+  
+//   protected chasePlayer(): void {
+//     // Assuming enemy battlers are identified by a certain battleGroup value
+//     const enemyBattleGroup = 1;  // This is just an example, adjust as needed.
+    
+//     // First, check if this.player is defined and has a position property.
+//     if (!this.player || !this.player.position) {
+//       return; // Exit the function if player or player's position is undefined or null.
+//     }
+
+//     // Double the speed of the enemies chasing the player
+//     const enemySpeed = 0.4; // Adjust this value as needed
+    
+//     this.battlers.forEach((battler, index) => {
+//       if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
+//         const distanceToPlayer = battler.position.distanceTo(this.player.position);
+//         if (distanceToPlayer < 50) {
+//           console.log("Player seen, starting chase.");
+//           // Calculate the direction vector towards the player
+//           const direction = this.player.position.clone().sub(battler.position).normalize();
+//           // Adjust enemy's position based on the direction and speed
+//           battler.position.add(direction.scaled(enemySpeed));
+//         } 
+//       }
+//     });
+// }
 
   protected chasePlayer(): void {
     // First, check if the game is paused
@@ -514,12 +586,28 @@ export default class MainHW4Scene extends HW4Scene {
 
   protected addUI() {
     // In-game labels
-    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(80, 30), text: "Main Level" });
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Main Level" });
 
-    this.levelLabel.textColor = Color.WHITE
+    this.levelLabel.textColor = Color.BLACK
     this.levelLabel.font = "PixelSimple";
     this.uiLayer = this.getLayer("UI");
     this.uiLayer.addNode(this.levelLabel);
+
+        //timer
+        this.timerLabel = <Button>this.add.uiElement(
+          UIElementType.BUTTON,
+          "timer",
+          {
+            position: new Vec2(this.viewport.getHalfSize().x, 30),
+            text: "00:00",
+          }
+        );
+        // Remove the font-related line if you don't have custom fonts
+        this.timerLabel.borderColor = Color.BLACK;
+        this.timerLabel.textColor = Color.BLACK;
+        this.timerLabel.backgroundColor = Color.WHITE;
+        this.timerLabel.fontSize = 40;
+  
 
     /*
 
@@ -601,6 +689,9 @@ export default class MainHW4Scene extends HW4Scene {
     this.addUILayer("UI");
     this.getLayer("slots").setDepth(1);
     this.getLayer("items").setDepth(2);
+
+    this.addUILayer("timer");
+    this.getLayer("timer").setDepth(2);
   }
 
   protected initializePlayer(): void {
