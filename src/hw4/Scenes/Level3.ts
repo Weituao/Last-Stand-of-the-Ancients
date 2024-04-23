@@ -759,44 +759,7 @@ export default class Level3 extends HW4Scene {
     console.log("initializeNPCs has been called");
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
-    // Initialize the red healers
-    for (let i = 0; i < red.healers.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
-      npc.position.set(red.healers[i][0], red.healers[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-      npc.battleGroup = 1;
-      npc.speed = 10;
-      npc.health = 20;
-      npc.maxHealth = 20;
-      npc.navkey = "navmesh";
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-      npc.addAI(HealerBehavior);
-      npc.animation.play("IDLE");
-      this.battlers.push(npc);
-    }
-
-    for (let i = 0; i < red.enemies.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
-      npc.position.set(red.enemies[i][0], red.enemies[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-      // Set the NPCs stats
-      npc.battleGroup = 2
-      npc.speed = 10;
-      npc.health = 50;
-      npc.maxHealth = 50;
-      npc.navkey = "navmesh";
-      npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
-      // Play the NPCs "IDLE" animation 
-      npc.animation.play("IDLE");
-      // Add the NPC to the battlers array
-      this.battlers.push(npc);
-    }
-
+    
     for (let i = 0; i < red.demon.length; i++) {
       let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
       npc.position.set(red.demon[i][0], red.demon[i][1]);
