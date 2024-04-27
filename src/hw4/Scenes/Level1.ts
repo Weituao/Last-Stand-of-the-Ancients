@@ -92,6 +92,18 @@ export default class Level1 extends HW4Scene {
   private elapsedTime: number;
   private remainingTime: number;
 
+private resumeButton: Button;
+private levelSelectionButton: Label;
+private ControlsButton: Label;
+private helpButton: Label;
+private menuButton: Label;
+private backButton: Label;
+private levelButton1: Label;
+private levelButton2: Label;
+private levelButton3: Label;
+private levelButton4: Label;
+
+
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
   private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
 
@@ -127,15 +139,16 @@ export default class Level1 extends HW4Scene {
     this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
-    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen1.png");
-    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen1.png");
-    this.load.image("helpScreen", "hw4_assets/Screens/help_screen1.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
   }
 
   /**
    * @see Scene.startScene
    */
   public override startScene() {
+
 
     this.elapsedTime = 0;
     this.remainingTime = 120 * 1000;
@@ -211,8 +224,216 @@ export default class Level1 extends HW4Scene {
     this.helpLayer.setHidden(true); // Hide the layer initially
 
     this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music1", loop: true, holdReference: true });
+  
+    //resume button
+    this.resumeButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 121),
+        text: "Resume",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.resumeButton.borderColor = Color.BLACK;
+    this.resumeButton.textColor = Color.WHITE;
+    this.resumeButton.backgroundColor = Color.BLACK;
+    this.resumeButton.size.set(80, 16);
+    this.resumeButton.fontSize = 40;
+    this.resumeButton.onClickEventId = "resume";
+    this.receiver.subscribe("resume");
+
+
+
+    //level selection button
+    this.levelSelectionButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 143),
+        text: "Level Selection",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelSelectionButton.borderColor = Color.BLACK;
+    this.levelSelectionButton.textColor = Color.WHITE;
+    this.levelSelectionButton.backgroundColor = Color.BLACK;
+    this.levelSelectionButton.size.set(80, 16);
+    this.levelSelectionButton.fontSize = 40;
+    this.levelSelectionButton.onClickEventId = "level selection";
+    this.receiver.subscribe("level selection");
+
+
+    
+    //controls button
+    this.ControlsButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 170),
+        text: "Controls",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.ControlsButton.borderColor = Color.BLACK;
+    this.ControlsButton.textColor = Color.WHITE;
+    this.ControlsButton.backgroundColor = Color.BLACK;
+    this.ControlsButton.size.set(80, 16);
+    this.ControlsButton.fontSize = 40;
+    this.ControlsButton.onClickEventId = "controls";
+    this.receiver.subscribe("controls");
+    
+  
+
+
+    //help button
+    this.helpButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 191),
+        text: "Help",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.helpButton.borderColor = Color.BLACK;
+    this.helpButton.textColor = Color.WHITE;
+    this.helpButton.backgroundColor = Color.BLACK;
+    this.helpButton.size.set(80, 16);
+    this.helpButton.fontSize = 40;
+    this.helpButton.onClickEventId = "help";
+    this.receiver.subscribe("help");
+
+
+
+
+    //menu button
+    this.menuButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Main Menu",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.menuButton.borderColor = Color.BLACK;
+    this.menuButton.textColor = Color.WHITE;
+    this.menuButton.backgroundColor = Color.BLACK;
+    this.menuButton.size.set(80, 16);
+    this.menuButton.fontSize = 40;
+    this.menuButton.onClickEventId = "main menu";
+    this.receiver.subscribe("main menu");
+
+
+    //back button
+    this.backButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(30, 30),
+        text: "Back",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.backButton.borderColor = Color.BLACK;
+    this.backButton.textColor = Color.WHITE;
+    this.backButton.backgroundColor = Color.BLACK;
+    this.backButton.size.set(80, 16);
+    this.backButton.fontSize = 40;
+    this.backButton.onClickEventId = "back";
+    this.receiver.subscribe("back");
+    
+    //level 1 button
+    this.levelButton1 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Level 1",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton1.borderColor = Color.BLACK;
+    this.levelButton1.textColor = Color.WHITE;
+    this.levelButton1.backgroundColor = Color.BLACK;
+    this.levelButton1.size.set(80, 16);
+    this.levelButton1.fontSize = 40;
+    this.levelButton1.onClickEventId = "level 1";
+    this.receiver.subscribe("level 1");
+
+    //level 2 button
+    this.levelButton2 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Level 2",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton2.borderColor = Color.BLACK;
+    this.levelButton2.textColor = Color.WHITE;
+    this.levelButton2.backgroundColor = Color.BLACK;
+    this.levelButton2.size.set(80, 16);
+    this.levelButton2.fontSize = 40;
+    this.levelButton2.onClickEventId = "level 2";
+    this.receiver.subscribe("level 2");
+
+    //level 3 button
+    this.levelButton3 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Level 3",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton3.borderColor = Color.BLACK;
+    this.levelButton3.textColor = Color.WHITE;
+    this.levelButton3.backgroundColor = Color.BLACK;
+    this.levelButton3.size.set(80, 16);
+    this.levelButton3.fontSize = 40;
+    this.levelButton3.onClickEventId = "level 3";
+    this.receiver.subscribe("level 3");
+
+    //level 4 button
+    this.levelButton4 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Level 4",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton4.borderColor = Color.BLACK;
+    this.levelButton4.textColor = Color.WHITE;
+    this.levelButton4.backgroundColor = Color.BLACK;
+    this.levelButton4.size.set(80, 16);
+    this.levelButton4.fontSize = 40;
+    this.levelButton4.onClickEventId = "level 4";
+    this.receiver.subscribe("level 4");
+
+
+    
+
+    this.resumeButton.visible = false;
+    this.levelSelectionButton.visible = false;
+    this.ControlsButton.visible = false;
+    this.helpButton.visible = false;
+    this.menuButton.visible = false;
+    this.backButton.visible = false;
+    this.levelButton1.visible = false;
+    this.levelButton2.visible = false;
+    this.levelButton3.visible = false;
+    this.levelButton4.visible = false;
   }
 
+
+
+  
   /**
    * @see Scene.updateScene
    */
@@ -258,15 +479,6 @@ export default class Level1 extends HW4Scene {
         console.log("MainHW4Scene has detected a v press");
     };
   }
-  if (this.GameIsPaused) {
-    if (Input.isKeyJustPressed("m")) {
-    console.log("1 has been pressed.");
-    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
-    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
-    this.viewport.getHalfSize().scale(3.5);
-    this.sceneManager.changeToScene(MainMenu);
-  };
-}
   if(this.GameIsPaused){
     this.initializeNPCsBool=false;
   }else{
@@ -348,13 +560,7 @@ export default class Level1 extends HW4Scene {
         this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
     }
     if (this.initializeNPCsBool) {
-      // Existing code...
-      // this.npcInitTimer += deltaT;
-      // if (this.npcInitTimer >= this.npcInitInterval) {
-      //   this.initializeNPCs();
-      //   this.npcInitTimer = 0; // Reset the timer after initializing NPCs
-      // }
-      // Decrease npcInitTimer by the amount of time that has passed
+
       this.npcInitTimer -= deltaT;
       // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
       if (this.npcInitTimer <= 0) {
@@ -383,52 +589,6 @@ export default class Level1 extends HW4Scene {
   this.timerLabel.visible = false;
 }
 }
-
-  // protected chasePlayer(): void {
-  //   console.log("enterChase called");
-  //   // Assuming enemy battlers are identified by a certain battleGroup value
-  //   const enemyBattleGroup = 1;  // This is just an example, adjust as needed.
-  //   console.log("Enemy battle group: ", enemyBattleGroup);
-  //   // First, check if this.player is defined and has a position property.
-  //   if (!this.player || !this.player.position) {
-  //     console.log("Player or player position is not defined.");
-  //     return; // Exit the function if player or player's position is undefined or null.
-  //   }
-  //   this.battlers.forEach((battler, index) => {
-  //     console.log(`Processing battler ${index + 1}/${this.battlers.length}`);
-  //     //In enterChase() method, when trying to access this.player.position, it saids that position is undefined
-  //     if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
-  //       console.log("Battler is defined and has a position.");
-  //       console.log("Battler Position:" + battler.position);
-  //       console.log("this.player.position:" + this.player.position);
-  //       const distanceToPlayer = battler.position.distanceTo(this.player.position);
-  //       console.log(`Distance to player: ${distanceToPlayer}`);
-  //       //if (distanceToPlayer < 50) {
-  //         if (true) {
-  //         this.isFollowingPlayer = true;
-  //         console.log("Player seen, starting chase.");
-  //         // Adjust enemy's x position
-  //         if (battler.position.x > this.player.position.x) {
-  //           battler.position.x -= 0.2;
-  //           console.log(`Moving battler left to x=${battler.position.x}`);
-  //         } else {
-  //           battler.position.x += 0.2;
-  //           console.log(`Moving battler right to x=${battler.position.x}`);
-  //         }
-  //         // Adjust enemy's y position
-  //         if (battler.position.y > this.player.position.y) {
-  //           battler.position.y -= 0.2;
-  //           console.log(`Moving battler up to y=${battler.position.y}`);
-  //         } else {
-  //           battler.position.y += 0.2;
-  //           console.log(`Moving battler down to y=${battler.position.y}`);
-  //         }
-  //       } 
-  //     } else {
-  //       console.log("Battler is undefined, or does not have a position, or is not an enemy.");
-  //     }
-  //   });
-  // }
 
   protected chasePlayer(): void {
     // First, check if the game is paused
@@ -482,13 +642,103 @@ export default class Level1 extends HW4Scene {
     });
   }
 
-
   /**
    * Handle events from the rest of the game
    * @param event a game event
    */
   public handleEvent(event: GameEvent): void {
     switch (event.type) {
+      case "resume":
+        this.resumeButton.visible = false;
+        this.levelSelectionButton.visible = false;
+        this.ControlsButton.visible = false;
+        this.helpButton.visible = false;
+        this.menuButton.visible = false;
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        break;
+      
+        case "level selection":
+          if (this.levelSelectionLayer.isHidden()) {
+            this.levelSelectionLayer.setHidden(false);
+            this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+            this.resumeButton.visible = false;
+            this.levelSelectionButton.visible = false;
+            this.ControlsButton.visible = false;
+            this.helpButton.visible = false;
+            this.menuButton.visible = false;
+            this.levelButton1.visible = true;
+            this.backButton.visible = true;
+          }
+        console.log("MainHW4Scene has detected a x press");        
+        break;
+
+
+
+      case "controls":
+        if (this.controlLayer.isHidden()) {
+          this.controlLayer.setHidden(false);
+          this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
+          this.backButton.visible = true;
+        }
+      console.log("MainHW4Scene has detected a C press");   
+        break;
+      
+
+
+      case "help":
+        if (this.helpLayer.isHidden()) {
+          this.helpLayer.setHidden(false);
+          this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
+          this.backButton.visible = true;
+        }
+      console.log("MainHW4Scene has detected a v press");
+        break;
+
+      
+      case "main menu":
+        console.log("1 has been pressed.");
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+        this.viewport.getHalfSize().scale(3.5);
+        this.sceneManager.changeToScene(MainMenu);
+        break;
+
+      case "back":
+        this.levelSelectionLayer.setHidden(true);
+        this.controlLayer.setHidden(true);
+        this.helpLayer.setHidden(true);
+        this.backButton.visible = false;
+        this.levelButton1.visible = false;
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.resumeButton.visible = true;
+        this.levelSelectionButton.visible = true;
+        this.ControlsButton.visible = true;
+        this.helpButton.visible = true;
+        this.menuButton.visible = true;
+        break;
+
+
+        case "level 1":
+          console.log("1 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level1);
+          break;
+
+
+
       case BattlerEvent.BATTLER_KILLED: {
         this.handleBattlerKilled(event);
         break;
@@ -502,6 +752,12 @@ export default class Level1 extends HW4Scene {
       }
       case BattlerEvent.PAUSE: {
         if (!this.GameIsPaused) {
+          this.resumeButton.visible = true;
+          this.levelSelectionButton.visible = true;
+          this.ControlsButton.visible = true;
+          this.helpButton.visible = true;
+          this.menuButton.visible = true;
+          
           this.battlers.forEach(battler => {
             (<GameNode>(<Actor>battler)).freeze();
           });
@@ -511,6 +767,11 @@ export default class Level1 extends HW4Scene {
           const center = this.viewport.getCenter();
           this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
         } else {
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
           // Optionally, handle the case when the game is paused
           // For example, unfreeze battlers or perform some other action
           this.battlers.forEach(battler => {
@@ -575,77 +836,7 @@ export default class Level1 extends HW4Scene {
         this.timerLabel.textColor = Color.BLACK;
         this.timerLabel.backgroundColor = Color.WHITE;
         this.timerLabel.fontSize = 40;
-  
-
-    /*
-
-    this.switchLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(80, 50), text: "Switches Left: " + (this.totalSwitches - this.switchesPressed)});
-    this.switchLabel.textColor = Color.BLACK;
-    this.switchLabel.font = "PixelSimple";
-
-    this.livesCountLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(500, 30), text: "Lives: " + GameLevel.livesCount});
-    this.livesCountLabel.textColor = Color.BLACK;
-    this.livesCountLabel.font = "PixelSimple";
-
-    // End of level label (start off screen)
-    this.levelEndLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", {position: new Vec2(-300, 200), text: "Level Complete"});
-    this.levelEndLabel.size.set(1200, 60);
-    this.levelEndLabel.borderRadius = 0;
-    this.levelEndLabel.backgroundColor = new Color(34, 32, 52);
-    this.levelEndLabel.textColor = Color.WHITE;
-    this.levelEndLabel.fontSize = 48;
-    this.levelEndLabel.font = "PixelSimple";
-
-    // Add a tween to move the label on screen
-    this.levelEndLabel.tweens.add("slideIn", {
-        startDelay: 0,
-        duration: 1000,
-        effects: [
-            {
-                property: TweenableProperties.posX,
-                start: -300,
-                end: 300,
-                ease: EaseFunctionType.OUT_SINE
-            }
-        ]
-    });
-
-    // Create our particle system and initialize the pool
-    this.system = new HW5_ParticleSystem(100, new Vec2((5 * 32), (10 * 32)), 2000, 3, 1, 100);
-    this.system.initializePool(this, "primary");
-
-    this.levelTransitionScreen = <Rect>this.add.graphic(GraphicType.RECT, "UI", {position: new Vec2(300, 200), size: new Vec2(600, 400)});
-    this.levelTransitionScreen.color = new Color(34, 32, 52);
-    this.levelTransitionScreen.alpha = 1;
-
-    this.levelTransitionScreen.tweens.add("fadeIn", {
-        startDelay: 0,
-        duration: 1000,
-        effects: [
-            {
-                property: TweenableProperties.alpha,
-                start: 0,
-                end: 1,
-                ease: EaseFunctionType.IN_OUT_QUAD
-            }
-        ],
-        onEnd: HW5_Events.LEVEL_END
-    });
-
-    this.levelTransitionScreen.tweens.add("fadeOut", {
-        startDelay: 0,
-        duration: 1000,
-        effects: [
-            {
-                property: TweenableProperties.alpha,
-                start: 1,
-                end: 0,
-                ease: EaseFunctionType.IN_OUT_QUAD
-            }
-        ],
-        onEnd: HW5_Events.LEVEL_START
-    });
-    */
+        
   }
 
   /** Initializes the layers in the scene */
@@ -685,71 +876,6 @@ export default class Level1 extends HW4Scene {
     this.battlers.push(this.player);
     this.viewport.follow(this.player);
   }
-
-    /**
-   * Initialize the NPCs 
-   */
-  // protected initializeNPCs(): void {
-  //   // Get the object data for the red enemies
-  //   let red = this.load.getObject("red");
-  //   // Initialize the red healers
-  //   for (let i = 0; i < red.healers.length; i++) {
-  //     let npc = this.add.animatedSprite(NPCActor, "bat", "primary");
-  //     npc.position.set(red.healers[i][0], red.healers[i][1]);
-  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-  //     npc.battleGroup = 1;
-  //     npc.speed = 40;
-  //     npc.health = 20;
-  //     npc.maxHealth = 20;
-  //     npc.navkey = "navmesh";
-  //     // Give the NPC a healthbar
-  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-  //     this.healthbars.set(npc.id, healthbar);
-  //     npc.addAI(HealerBehavior);
-  //     npc.animation.play("IDLE");
-  //     this.battlers.push(npc);
-  //   }
-
-  //   for (let i = 0; i < red.enemies.length; i++) {
-  //     let npc = this.add.animatedSprite(NPCActor, "bug", "primary");
-  //     npc.position.set(red.enemies[i][0], red.enemies[i][1]);
-  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-  //     // Give the NPC a healthbar
-  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-  //     this.healthbars.set(npc.id, healthbar);
-  //     // Set the NPCs stats
-  //     npc.battleGroup = 1
-  //     npc.speed = 20;
-  //     npc.health = 50;
-  //     npc.maxHealth = 50;
-  //     npc.navkey = "navmesh";
-  //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
-  //     // Play the NPCs "IDLE" animation 
-  //     npc.animation.play("IDLE");
-  //     // Add the NPC to the battlers array
-  //     this.battlers.push(npc);
-  //   }
-
-  //   for (let i = 0; i < red.demon.length; i++) {
-  //     let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
-  //     npc.position.set(red.demon[i][0], red.demon[i][1]);
-  //     npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-  //     // Give the NPC a healthbar
-  //     let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-  //     this.healthbars.set(npc.id, healthbar);
-  //     // Set the NPCs stats
-  //     npc.battleGroup = 1
-  //     npc.speed = 15;
-  //     npc.health = 100;
-  //     npc.maxHealth = 100;
-  //     npc.navkey = "navmesh";
-  //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
-  //     // Play the NPCs "IDLE" animation 
-  //     npc.animation.play("IDLE");
-  //     // Add the NPC to the battlers array
-  //     this.battlers.push(npc);
-  //   }
-  // }
 
   protected initializeNPCs(): void {
 

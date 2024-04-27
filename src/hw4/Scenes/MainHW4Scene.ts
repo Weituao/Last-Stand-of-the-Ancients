@@ -130,9 +130,9 @@ export default class MainHW4Scene extends HW4Scene {
     this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
-    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen1.png");
-    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen1.png");
-    this.load.image("helpScreen", "hw4_assets/Screens/help_screen1.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
   }
 
   /**
