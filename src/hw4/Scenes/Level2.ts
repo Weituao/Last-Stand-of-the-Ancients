@@ -92,6 +92,18 @@ export default class Level2 extends HW4Scene {
   private elapsedTime: number;
   private remainingTime: number;
 
+
+  private resumeButton: Button;
+private levelSelectionButton: Label;
+private ControlsButton: Label;
+private helpButton: Label;
+private menuButton: Label;
+private backButton: Label;
+private levelButton1: Label;
+private levelButton2: Label;
+private levelButton3: Label;
+private levelButton4: Label;
+
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
   private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
 
@@ -127,9 +139,9 @@ export default class Level2 extends HW4Scene {
     this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.audio("attack", "hw4_assets/music/attack.wav");
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
-    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen1.png");
-    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen1.png");
-    this.load.image("helpScreen", "hw4_assets/Screens/help_screen1.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
   }
 
   /**
@@ -211,6 +223,211 @@ export default class Level2 extends HW4Scene {
     this.helpLayer.setHidden(true); // Hide the layer initially
 
     this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music2", loop: true, holdReference: true });
+ 
+    //resume button
+    this.resumeButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 121),
+        text: "Resume",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.resumeButton.borderColor = Color.BLACK;
+    this.resumeButton.textColor = Color.WHITE;
+    this.resumeButton.backgroundColor = Color.BLACK;
+    this.resumeButton.size.set(80, 16);
+    this.resumeButton.fontSize = 40;
+    this.resumeButton.onClickEventId = "resume";
+    this.receiver.subscribe("resume");
+
+
+
+    //level selection button
+    this.levelSelectionButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 143),
+        text: "Level Selection",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelSelectionButton.borderColor = Color.BLACK;
+    this.levelSelectionButton.textColor = Color.WHITE;
+    this.levelSelectionButton.backgroundColor = Color.BLACK;
+    this.levelSelectionButton.size.set(80, 16);
+    this.levelSelectionButton.fontSize = 40;
+    this.levelSelectionButton.onClickEventId = "level selection";
+    this.receiver.subscribe("level selection");
+
+
+    
+    //controls button
+    this.ControlsButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 170),
+        text: "Controls",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.ControlsButton.borderColor = Color.BLACK;
+    this.ControlsButton.textColor = Color.WHITE;
+    this.ControlsButton.backgroundColor = Color.BLACK;
+    this.ControlsButton.size.set(80, 16);
+    this.ControlsButton.fontSize = 40;
+    this.ControlsButton.onClickEventId = "controls";
+    this.receiver.subscribe("controls");
+    
+  
+
+
+    //help button
+    this.helpButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 191),
+        text: "Help",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.helpButton.borderColor = Color.BLACK;
+    this.helpButton.textColor = Color.WHITE;
+    this.helpButton.backgroundColor = Color.BLACK;
+    this.helpButton.size.set(80, 16);
+    this.helpButton.fontSize = 40;
+    this.helpButton.onClickEventId = "help";
+    this.receiver.subscribe("help");
+
+
+
+
+    //menu button
+    this.menuButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Main Menu",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.menuButton.borderColor = Color.BLACK;
+    this.menuButton.textColor = Color.WHITE;
+    this.menuButton.backgroundColor = Color.BLACK;
+    this.menuButton.size.set(80, 16);
+    this.menuButton.fontSize = 40;
+    this.menuButton.onClickEventId = "main menu";
+    this.receiver.subscribe("main menu");
+
+
+    //back button
+    this.backButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(30, 30),
+        text: "Back",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.backButton.borderColor = Color.BLACK;
+    this.backButton.textColor = Color.WHITE;
+    this.backButton.backgroundColor = Color.BLACK;
+    this.backButton.size.set(80, 16);
+    this.backButton.fontSize = 40;
+    this.backButton.onClickEventId = "back";
+    this.receiver.subscribe("back");
+    
+    //level 1 button
+    this.levelButton1 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 127),
+        text: "Level 1",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton1.borderColor = Color.BLACK;
+    this.levelButton1.textColor = Color.WHITE;
+    this.levelButton1.backgroundColor = Color.BLACK;
+    this.levelButton1.size.set(160, 35);
+    this.levelButton1.fontSize = 40;
+    this.levelButton1.onClickEventId = "level 1";
+    this.receiver.subscribe("level 1");
+
+    //level 2 button
+    this.levelButton2 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 162),
+        text: "Level 2",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton2.borderColor = Color.BLACK;
+    this.levelButton2.textColor = Color.WHITE;
+    this.levelButton2.backgroundColor = Color.BLACK;
+    this.levelButton2.size.set(160, 35);
+    this.levelButton2.fontSize = 40;
+    this.levelButton2.onClickEventId = "level 2";
+    this.receiver.subscribe("level 2");
+
+    //level 3 button
+    this.levelButton3 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 196),
+        text: "Level 3",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton3.borderColor = Color.BLACK;
+    this.levelButton3.textColor = Color.WHITE;
+    this.levelButton3.backgroundColor = Color.BLACK;
+    this.levelButton3.size.set(160, 35);
+    this.levelButton3.fontSize = 40;
+    this.levelButton3.onClickEventId = "level 3";
+    this.receiver.subscribe("level 3");
+
+    //level 4 button
+    this.levelButton4 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 230),
+        text: "Level 4",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.levelButton4.borderColor = Color.BLACK;
+    this.levelButton4.textColor = Color.WHITE;
+    this.levelButton4.backgroundColor = Color.BLACK;
+    this.levelButton4.size.set(160, 35);
+    this.levelButton4.fontSize = 40;
+    this.levelButton4.onClickEventId = "level 4";
+    this.receiver.subscribe("level 4");
+
+
+    
+
+    this.resumeButton.visible = false;
+    this.levelSelectionButton.visible = false;
+    this.ControlsButton.visible = false;
+    this.helpButton.visible = false;
+    this.menuButton.visible = false;
+    this.backButton.visible = false;
+    this.levelButton1.visible = false;
+    this.levelButton2.visible = false;
+    this.levelButton3.visible = false;
+    this.levelButton4.visible = false;
   }
 
   /**
@@ -225,48 +442,6 @@ export default class Level2 extends HW4Scene {
         this.emitter.fireEvent(BattlerEvent.PAUSE);
         console.log("MainHW4Scene has detected a p press");
     };
-    if (this.GameIsPaused) {
-      if (Input.isKeyJustPressed("c")) {
-          if (this.controlLayer.isHidden()) {
-              this.controlLayer.setHidden(false);
-              this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-          } else {
-              this.controlLayer.setHidden(true);
-          }
-          console.log("MainHW4Scene has detected a C press");
-      };
-  }
-  if (this.GameIsPaused) {
-    if (Input.isKeyJustPressed("x")) {
-        if (this.levelSelectionLayer.isHidden()) {
-            this.levelSelectionLayer.setHidden(false);
-            this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-        } else {
-            this.levelSelectionLayer.setHidden(true);
-        }
-        console.log("MainHW4Scene has detected a x press");
-    };
-  }
-  if (this.GameIsPaused) {
-    if (Input.isKeyJustPressed("v")) {
-        if (this.helpLayer.isHidden()) {
-            this.helpLayer.setHidden(false);
-            this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-        } else {
-            this.helpLayer.setHidden(true);
-        }
-        console.log("MainHW4Scene has detected a v press");
-    };
-  }
-  if (this.GameIsPaused) {
-    if (Input.isKeyJustPressed("m")) {
-    console.log("1 has been pressed.");
-    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
-    this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
-    this.viewport.getHalfSize().scale(3.5);
-    this.sceneManager.changeToScene(MainMenu);
-  };
-}
   if(this.GameIsPaused){
     this.initializeNPCsBool=false;
   }else{
@@ -307,6 +482,17 @@ export default class Level2 extends HW4Scene {
     if (Input.isKeyJustPressed("f")) {
         // Restore player's health to maximum
         this.player.health = this.player.maxHealth;
+    }
+    if (Input.isKeyJustPressed("-")) {
+      // Restore player's health to maximum
+      this.player.health = this.player.health - 100;
+  }
+    if (this.player.health <=0){
+      {
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+        }
+      this.sceneManager.changeToScene(GameOver);
     }
     // Check if the 'i' key is pressed
     if (Input.isKeyJustPressed("i")) {
@@ -490,6 +676,126 @@ export default class Level2 extends HW4Scene {
    */
   public handleEvent(event: GameEvent): void {
     switch (event.type) {
+      case "resume":
+        this.resumeButton.visible = false;
+        this.levelSelectionButton.visible = false;
+        this.ControlsButton.visible = false;
+        this.helpButton.visible = false;
+        this.menuButton.visible = false;
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        break;
+      
+        case "level selection":
+          if (this.levelSelectionLayer.isHidden()) {
+            this.levelSelectionLayer.setHidden(false);
+            this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+            this.resumeButton.visible = false;
+            this.levelSelectionButton.visible = false;
+            this.ControlsButton.visible = false;
+            this.helpButton.visible = false;
+            this.menuButton.visible = false;
+            this.levelButton1.visible = true;
+            this.levelButton2.visible = true;
+            this.levelButton3.visible = true;
+            this.levelButton4.visible = true;
+            this.backButton.visible = true;
+          }
+        console.log("MainHW4Scene has detected a x press");        
+        break;
+
+
+
+      case "controls":
+        if (this.controlLayer.isHidden()) {
+          this.controlLayer.setHidden(false);
+          this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
+          this.backButton.visible = true;
+        }
+      console.log("MainHW4Scene has detected a C press");   
+        break;
+      
+
+
+      case "help":
+        if (this.helpLayer.isHidden()) {
+          this.helpLayer.setHidden(false);
+          this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
+          this.backButton.visible = true;
+        }
+      console.log("MainHW4Scene has detected a v press");
+        break;
+
+      
+      case "main menu":
+        console.log("1 has been pressed.");
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+        this.viewport.getHalfSize().scale(3.5);
+        this.sceneManager.changeToScene(MainMenu);
+        break;
+
+      case "back":
+        this.levelSelectionLayer.setHidden(true);
+        this.controlLayer.setHidden(true);
+        this.helpLayer.setHidden(true);
+        this.backButton.visible = false;
+        this.levelButton1.visible = false;
+        this.levelButton2.visible = false;
+        this.levelButton3.visible = false;
+        this.levelButton4.visible = false;
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.resumeButton.visible = true;
+        this.levelSelectionButton.visible = true;
+        this.ControlsButton.visible = true;
+        this.helpButton.visible = true;
+        this.menuButton.visible = true;
+        break;
+
+
+        case "level 1":
+          console.log("1 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level1);
+          break;
+
+        case "level 2":
+          console.log("2 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level2);
+          break;
+
+        case "level 3":
+          console.log("3 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level3);
+          break;
+
+        case "level 4":
+          console.log("4 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level4);
+          break;
+
+
       case BattlerEvent.BATTLER_KILLED: {
         this.handleBattlerKilled(event);
         break;
@@ -503,6 +809,12 @@ export default class Level2 extends HW4Scene {
       }
       case BattlerEvent.PAUSE: {
         if (!this.GameIsPaused) {
+          this.resumeButton.visible = true;
+          this.levelSelectionButton.visible = true;
+          this.ControlsButton.visible = true;
+          this.helpButton.visible = true;
+          this.menuButton.visible = true;
+          
           this.battlers.forEach(battler => {
             (<GameNode>(<Actor>battler)).freeze();
           });
@@ -512,6 +824,11 @@ export default class Level2 extends HW4Scene {
           const center = this.viewport.getCenter();
           this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
         } else {
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
           // Optionally, handle the case when the game is paused
           // For example, unfreeze battlers or perform some other action
           this.battlers.forEach(battler => {

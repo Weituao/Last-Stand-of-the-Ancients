@@ -349,7 +349,7 @@ private levelButton4: Label;
       UIElementType.BUTTON,
       "timer",
       {
-        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        position: new Vec2(this.viewport.getHalfSize().x, 127),
         text: "Level 1",
       }
     );
@@ -357,7 +357,7 @@ private levelButton4: Label;
     this.levelButton1.borderColor = Color.BLACK;
     this.levelButton1.textColor = Color.WHITE;
     this.levelButton1.backgroundColor = Color.BLACK;
-    this.levelButton1.size.set(80, 16);
+    this.levelButton1.size.set(160, 35);
     this.levelButton1.fontSize = 40;
     this.levelButton1.onClickEventId = "level 1";
     this.receiver.subscribe("level 1");
@@ -367,7 +367,7 @@ private levelButton4: Label;
       UIElementType.BUTTON,
       "timer",
       {
-        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        position: new Vec2(this.viewport.getHalfSize().x, 162),
         text: "Level 2",
       }
     );
@@ -375,7 +375,7 @@ private levelButton4: Label;
     this.levelButton2.borderColor = Color.BLACK;
     this.levelButton2.textColor = Color.WHITE;
     this.levelButton2.backgroundColor = Color.BLACK;
-    this.levelButton2.size.set(80, 16);
+    this.levelButton2.size.set(160, 35);
     this.levelButton2.fontSize = 40;
     this.levelButton2.onClickEventId = "level 2";
     this.receiver.subscribe("level 2");
@@ -385,7 +385,7 @@ private levelButton4: Label;
       UIElementType.BUTTON,
       "timer",
       {
-        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        position: new Vec2(this.viewport.getHalfSize().x, 196),
         text: "Level 3",
       }
     );
@@ -393,7 +393,7 @@ private levelButton4: Label;
     this.levelButton3.borderColor = Color.BLACK;
     this.levelButton3.textColor = Color.WHITE;
     this.levelButton3.backgroundColor = Color.BLACK;
-    this.levelButton3.size.set(80, 16);
+    this.levelButton3.size.set(160, 35);
     this.levelButton3.fontSize = 40;
     this.levelButton3.onClickEventId = "level 3";
     this.receiver.subscribe("level 3");
@@ -403,7 +403,7 @@ private levelButton4: Label;
       UIElementType.BUTTON,
       "timer",
       {
-        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        position: new Vec2(this.viewport.getHalfSize().x, 230),
         text: "Level 4",
       }
     );
@@ -411,7 +411,7 @@ private levelButton4: Label;
     this.levelButton4.borderColor = Color.BLACK;
     this.levelButton4.textColor = Color.WHITE;
     this.levelButton4.backgroundColor = Color.BLACK;
-    this.levelButton4.size.set(80, 16);
+    this.levelButton4.size.set(160, 35);
     this.levelButton4.fontSize = 40;
     this.levelButton4.onClickEventId = "level 4";
     this.receiver.subscribe("level 4");
@@ -446,39 +446,6 @@ private levelButton4: Label;
         this.emitter.fireEvent(BattlerEvent.PAUSE);
         console.log("MainHW4Scene has detected a p press");
     };
-    if (this.GameIsPaused) {
-      if (Input.isKeyJustPressed("c")) {
-          if (this.controlLayer.isHidden()) {
-              this.controlLayer.setHidden(false);
-              this.controlScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-          } else {
-              this.controlLayer.setHidden(true);
-          }
-          console.log("MainHW4Scene has detected a C press");
-      };
-  }
-  if (this.GameIsPaused) {
-    if (Input.isKeyJustPressed("x")) {
-        if (this.levelSelectionLayer.isHidden()) {
-            this.levelSelectionLayer.setHidden(false);
-            this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-        } else {
-            this.levelSelectionLayer.setHidden(true);
-        }
-        console.log("MainHW4Scene has detected a x press");
-    };
-  }
-  if (this.GameIsPaused) {
-    if (Input.isKeyJustPressed("v")) {
-        if (this.helpLayer.isHidden()) {
-            this.helpLayer.setHidden(false);
-            this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-        } else {
-            this.helpLayer.setHidden(true);
-        }
-        console.log("MainHW4Scene has detected a v press");
-    };
-  }
   if(this.GameIsPaused){
     this.initializeNPCsBool=false;
   }else{
@@ -519,6 +486,17 @@ private levelButton4: Label;
     if (Input.isKeyJustPressed("f")) {
         // Restore player's health to maximum
         this.player.health = this.player.maxHealth;
+    }
+    if (Input.isKeyJustPressed("-")) {
+      // Restore player's health to maximum
+      this.player.health = this.player.health - 100;
+  }
+    if (this.player.health <=0){
+      {
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
+        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+        }
+      this.sceneManager.changeToScene(GameOver);
     }
     // Check if the 'i' key is pressed
     if (Input.isKeyJustPressed("i")) {
@@ -588,6 +566,8 @@ private levelButton4: Label;
   // If the game is paused, hide the timer label
   this.timerLabel.visible = false;
 }
+
+
 }
 
   protected chasePlayer(): void {
@@ -667,6 +647,9 @@ private levelButton4: Label;
             this.helpButton.visible = false;
             this.menuButton.visible = false;
             this.levelButton1.visible = true;
+            this.levelButton2.visible = true;
+            this.levelButton3.visible = true;
+            this.levelButton4.visible = true;
             this.backButton.visible = true;
           }
         console.log("MainHW4Scene has detected a x press");        
@@ -719,6 +702,9 @@ private levelButton4: Label;
         this.helpLayer.setHidden(true);
         this.backButton.visible = false;
         this.levelButton1.visible = false;
+        this.levelButton2.visible = false;
+        this.levelButton3.visible = false;
+        this.levelButton4.visible = false;
         this.emitter.fireEvent(BattlerEvent.PAUSE);
         this.emitter.fireEvent(BattlerEvent.PAUSE);
         this.resumeButton.visible = true;
@@ -737,6 +723,29 @@ private levelButton4: Label;
           this.sceneManager.changeToScene(Level1);
           break;
 
+        case "level 2":
+          console.log("2 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level2);
+          break;
+
+        case "level 3":
+          console.log("3 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level3);
+          break;
+
+        case "level 4":
+          console.log("4 has been pressed.");
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music1" });
+          this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+          this.viewport.getHalfSize().scale(3.5);
+          this.sceneManager.changeToScene(Level4);
+          break;
 
 
       case BattlerEvent.BATTLER_KILLED: {
