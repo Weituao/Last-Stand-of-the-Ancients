@@ -87,7 +87,7 @@ export default class Level4 extends HW4Scene {
   protected levelLabel: Label;
 
   private uiLayer: Layer;
-  private countDownTimer: Timer;
+  private countUpTimer: Timer;
   private timerLabel: Label;
   private elapsedTime: number;
   private remainingTime: number;
@@ -153,8 +153,8 @@ private levelButton4: Label;
 
     this.elapsedTime = 0;
     this.remainingTime = 120 * 1000;
-    this.countDownTimer = new Timer(0);
-    this.countDownTimer.start();
+    this.countUpTimer = new Timer(0);
+    this.countUpTimer.start();
 
     // Add in the tilemap
     let tilemapLayers = this.add.tilemap("level");
@@ -549,25 +549,34 @@ private levelButton4: Label;
       }
       // ... rest of the update function ...
     }
- // Check if the game is paused
- if (!this.GameIsPaused) {
-  // Update the timer only if the game is not paused
-  this.countDownTimer.update(deltaT);
+// Check if the game is paused
+if (!this.GameIsPaused) {
+  // Update the timer only if it's not already stopped
+  if (this.countUpTimer.isStopped()) {
+      // If the timer was stopped, start it
+      this.countUpTimer.start();
+  } else {
+      // If the timer was paused, resume it
+      this.countUpTimer.update(deltaT);
+  }
 
-  // Update the timer label
-  this.remainingTime = Math.max(
-      this.countDownTimer.getTotalTime() - this.elapsedTime,
-      0
-  );
-  const minutes = Math.floor(this.remainingTime / 60);
-  const seconds = Math.floor(this.remainingTime % 60);
+  // Update the elapsed time
+  this.elapsedTime += deltaT;
+
   // Show the timer label
   this.timerLabel.visible = true;
 } else {
-  // If the game is paused, hide the timer label
+  // If the game is paused, pause the timer
+  this.countUpTimer.pause();
+
+  // Hide the timer label
   this.timerLabel.visible = false;
 }
 
+// Calculate the remaining time based on the elapsed time
+const minutes = Math.floor(this.elapsedTime / 60);
+const seconds = Math.floor(this.elapsedTime % 60);
+this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
 }
 

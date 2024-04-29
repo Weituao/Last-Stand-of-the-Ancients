@@ -87,7 +87,7 @@ export default class Level1 extends HW4Scene {
   protected levelLabel: Label;
 
   private uiLayer: Layer;
-  private countDownTimer: Timer;
+  private countUpTimer: Timer;
   private timerLabel: Label;
   private elapsedTime: number;
   private remainingTime: number;
@@ -151,9 +151,9 @@ private levelButton4: Label;
 
 
     this.elapsedTime = 0;
-    this.remainingTime = 120 * 1000;
-    this.countDownTimer = new Timer(0);
-    this.countDownTimer.start();
+    this.remainingTime = 0;
+    this.countUpTimer = new Timer(2 * 1000);
+    this.countUpTimer.start();
 
     // Add in the tilemap
     let tilemapLayers = this.add.tilemap("level");
@@ -548,79 +548,88 @@ private levelButton4: Label;
       }
       // ... rest of the update function ...
     }
- // Check if the game is paused
- if (!this.GameIsPaused) {
-  // Update the timer only if the game is not paused
-  this.countDownTimer.update(deltaT);
+// Check if the game is paused
+if (!this.GameIsPaused) {
+  // Update the timer only if it's not already stopped
+  if (this.countUpTimer.isStopped()) {
+      // If the timer was stopped, start it
+      this.countUpTimer.start();
+  } else {
+      // If the timer was paused, resume it
+      this.countUpTimer.update(deltaT);
+  }
 
-  // Update the timer label
-  this.remainingTime = Math.max(
-      this.countDownTimer.getTotalTime() - this.elapsedTime,
-      0
-  );
-  const minutes = Math.floor(this.remainingTime / 60);
-  const seconds = Math.floor(this.remainingTime % 60);
+  // Update the elapsed time
+  this.elapsedTime += deltaT;
+
   // Show the timer label
   this.timerLabel.visible = true;
 } else {
-  // If the game is paused, hide the timer label
+  // If the game is paused, pause the timer
+  this.countUpTimer.pause();
+
+  // Hide the timer label
   this.timerLabel.visible = false;
 }
 
+// Calculate the remaining time based on the elapsed time
+const minutes = Math.floor(this.elapsedTime / 60);
+const seconds = Math.floor(this.elapsedTime % 60);
+this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
 }
+protected chasePlayer(): void {
+  // First, check if the game is paused
+  if (this.GameIsPaused) {
+    return; // If paused, exit the function
+  }
 
-  protected chasePlayer(): void {
-    // First, check if the game is paused
-    if (this.GameIsPaused) {
-      return; // If paused, exit the function
-    }
+  // Next, check if this.player is defined and has a position property.
+  if (!this.player || !this.player.position) {
+    return; // Exit the function if player or player's position is undefined or null.
+  }
 
-    // Next, check if this.player is defined and has a position property.
-    if (!this.player || !this.player.position) {
-      return; // Exit the function if player or player's position is undefined or null.
-    }
+  // Define different minimum distances and speeds for each enemy battle group
+  const enemyAttributes = {
+    1: { minDistance: 15, speed: 0.9 },  // Attributes for enemy battle group 1
+    2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
+    3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
+  };
 
-    // Define different minimum distances and speeds for each enemy battle group
-    const enemyAttributes = {
-      1: { minDistance: 15, speed: 0.65 },  // Attributes for enemy battle group 1
-      2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
-      3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
-    };
+  this.battlers.forEach((battler, index) => {
+    if (battler && battler.position && battler.health > 0) {
+      // Determine the enemy battle group
+      const enemyBattleGroup = battler.battleGroup;
+      // Check if the enemy battle group is valid and has defined attributes
+      if (enemyBattleGroup in enemyAttributes) {
+        // Get the attributes for the current enemy battle group
+        const attributes = enemyAttributes[enemyBattleGroup];
+        let minDistance = attributes.minDistance;
+        const speed = attributes.speed;
 
-    this.battlers.forEach((battler, index) => {
-      if (battler && battler.position) {
-        // Determine the enemy battle group
-        const enemyBattleGroup = battler.battleGroup;
-        // Check if the enemy battle group is valid and has defined attributes
-        if (enemyBattleGroup in enemyAttributes) {
-          // Get the attributes for the current enemy battle group
-          const attributes = enemyAttributes[enemyBattleGroup];
-          const minDistance = attributes.minDistance;
-          const speed = attributes.speed;
+        // Calculate the direction vector towards the player
+        const direction = this.player.position.clone().sub(battler.position).normalize();
+        // Adjust enemy's position based on the direction and speed
+        battler.position.add(direction.scaled(speed));
 
-          // Calculate the direction vector towards the player
-          const direction = this.player.position.clone().sub(battler.position).normalize();
-          // Adjust enemy's position based on the direction and speed
-          battler.position.add(direction.scaled(speed));
-
-          // Check for collisions with other enemies
-          for (let otherBattler of this.battlers) {
-            if (otherBattler !== battler && otherBattler.position) {
-              const distanceToOther = battler.position.distanceTo(otherBattler.position);
-              if (distanceToOther < minDistance) {
-                // If too close, adjust the position away from the other enemy
-                const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
-                battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
-              }
+        // Check for collisions with other enemies
+        for (let otherBattler of this.battlers) {
+          if (otherBattler !== battler && otherBattler.position && otherBattler.health > 0) {
+            const distanceToOther = battler.position.distanceTo(otherBattler.position);
+            if (distanceToOther < minDistance) {
+              // If too close, adjust the position away from the other enemy
+              const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
+              battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
             }
           }
-        } else {
-          console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
         }
+      } else {
+        console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
       }
-    });
-  }
+    }
+  });
+}
+
 
   /**
    * Handle events from the rest of the game
