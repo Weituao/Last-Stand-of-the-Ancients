@@ -81,6 +81,15 @@ export default class NPCActor extends AnimatedSprite implements Battler, Targeti
             this.emitter.fireEvent(BattlerEvent.BATTLER_KILLED, {id: this.id});
         }
     }
+    public get energy(): number{ return this.battler.energy; }
+    public set energy(energy: number) {
+        this.battler.energy = energy;
+    }
+
+    public get maxEnergy(): number { return this.battler.maxEnergy; }
+    public set maxEnergy(maxEnergy: number) {
+        this.battler.maxEnergy = maxEnergy;
+    }
 
     public get speed(): number { return this.battler.speed; }
     public set speed(speed: number) { this.battler.speed = speed; }

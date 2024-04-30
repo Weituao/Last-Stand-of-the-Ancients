@@ -632,38 +632,38 @@ this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).pa
     if (this.GameIsPaused) {
       return; // If paused, exit the function
     }
-
+  
     // Next, check if this.player is defined and has a position property.
     if (!this.player || !this.player.position) {
       return; // Exit the function if player or player's position is undefined or null.
     }
-
+  
     // Define different minimum distances and speeds for each enemy battle group
     const enemyAttributes = {
-      1: { minDistance: 15, speed: 0.65 },  // Attributes for enemy battle group 1
+      1: { minDistance: 15, speed: 0.9 },  // Attributes for enemy battle group 1
       2: { minDistance: 24, speed: 0.35 },   // Attributes for enemy battle group 2
       3: { minDistance: 26, speed: 0.25 }    // Attributes for enemy battle group 3
     };
-
+  
     this.battlers.forEach((battler, index) => {
-      if (battler && battler.position) {
+      if (battler && battler.position && battler.health > 0) {
         // Determine the enemy battle group
         const enemyBattleGroup = battler.battleGroup;
         // Check if the enemy battle group is valid and has defined attributes
         if (enemyBattleGroup in enemyAttributes) {
           // Get the attributes for the current enemy battle group
           const attributes = enemyAttributes[enemyBattleGroup];
-          const minDistance = attributes.minDistance;
+          let minDistance = attributes.minDistance;
           const speed = attributes.speed;
-
+  
           // Calculate the direction vector towards the player
           const direction = this.player.position.clone().sub(battler.position).normalize();
           // Adjust enemy's position based on the direction and speed
           battler.position.add(direction.scaled(speed));
-
+  
           // Check for collisions with other enemies
           for (let otherBattler of this.battlers) {
-            if (otherBattler !== battler && otherBattler.position) {
+            if (otherBattler !== battler && otherBattler.position && otherBattler.health > 0) {
               const distanceToOther = battler.position.distanceTo(otherBattler.position);
               if (distanceToOther < minDistance) {
                 // If too close, adjust the position away from the other enemy

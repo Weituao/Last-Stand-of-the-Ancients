@@ -21,6 +21,14 @@ export default interface Battler extends TargetableEntity, Unique {
     get health(): number;
     set health(value: number);
 
+    /** The maximum health of the battler */
+    get maxEnergy(): number;
+    set maxEnergy(value: number);
+
+    /** The battlers current health */
+    get energy(): number;
+    set energy(value: number);
+
     /** The battlers current speed */
     get speed(): number;
     set speed(value: number);
