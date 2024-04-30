@@ -72,7 +72,7 @@ export default class EnergybarHUD implements Updateable {
       
         let unit = this.energyBarBg.size.x / this.owner.maxEnergy;
         this.energyBar.size.set(unit * this.owner.energy, this.energyBarBg.size.y);
-        this.energyBar.position.set(this.energyBarBg.position.x, this.energyBarBg.position.y);
+		this.energyBar.position.set(this.energyBarBg.position.x - (unit / scale / 2) * (this.owner.maxEnergy - this.owner.energy), this.energyBarBg.position.y);
         this.energyBar.backgroundColor = Color.YELLOW;
       }
       

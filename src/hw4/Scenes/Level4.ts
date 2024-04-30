@@ -49,6 +49,8 @@ import StartMenu from "./StartMenu";
 import GameOver from "./GameOver";
 import Controls from "./Controls";
 import Button from "../../Wolfie2D/Nodes/UIElements/Button";
+import EnergybarHUD from "../GameSystems/HUD/EnergybarHUD";
+
 
 export default class Level4 extends HW4Scene {
   protected invincibilityTimer: Timer | null = null;
@@ -56,18 +58,21 @@ export default class Level4 extends HW4Scene {
   private controlScreenSprite: Sprite;
   private levelSelectionScreenSprite: Sprite;
   private helpScreenSprite: Sprite;
-
+  private upgradeScreenSprite: Sprite;
 
   private pauseLayer: Layer;
   private controlLayer: Layer;
   private levelSelectionLayer: Layer;
   private helpLayer: Layer;
+  private upgradeLayer: Layer;
 
   /** GameSystems in the HW4 Scene */
   /** All the battlers in the HW4Scene (including the player) */
   private battlers: (Battler & Actor)[];
   /** Healthbars for the battlers */
   private healthbars: Map<number, HealthbarHUD>;
+  private energybars: Map<number, EnergybarHUD>;
+
   private bases: BattlerBase[];
   private healthpacks: Array<Healthpack>;
   private laserguns: Array<LaserGun>;
@@ -85,12 +90,15 @@ export default class Level4 extends HW4Scene {
   private increasedHealth: boolean | null = null;
   private originalMaxHealth: number | null = null;
   protected levelLabel: Label;
+  protected lvlLabel: Label;
 
   private uiLayer: Layer;
   private countUpTimer: Timer;
   private timerLabel: Label;
   private elapsedTime: number;
   private remainingTime: number;
+  private playerLevel: number = 1;
+
 
 private resumeButton: Button;
 private levelSelectionButton: Label;
@@ -102,16 +110,22 @@ private levelButton1: Label;
 private levelButton2: Label;
 private levelButton3: Label;
 private levelButton4: Label;
+private upgradeHealth: Label;
 
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
   private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
-
+// Define a variable to store the original mouse press cooldown duration
+private originalMousePressCooldown: number = 1; // 1 second in milliseconds
+// Define a variable to track the current mouse cooldown timer value
+private mouseCooldownTimer: number = this.originalMousePressCooldown;
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
     this.healthbars = new Map<number, HealthbarHUD>();
+    this.energybars = new Map<number, EnergybarHUD>();
+
     this.laserguns = new Array<LaserGun>();
     this.healthpacks = new Array<Healthpack>();
   }
@@ -144,6 +158,8 @@ private levelButton4: Label;
     this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
     this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
     this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
+    this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
+
   }
 
   /**
@@ -203,6 +219,16 @@ private levelButton4: Label;
     this.controlLayer.addNode(this.controlScreenSprite);
     this.controlScreenSprite.scale.set(0.4, 0.4);
     this.controlLayer.setHidden(true); // Hide the layer initially
+
+        //create upgrade screen
+        this.upgradeLayer = new Layer(this, "upgradeLayer");
+        this.upgradeLayer = this.addLayer('upgradeLayer', 100);
+        // Now, let's create a upgrade screen sprite and add it to the upgrade screen layer
+        this.upgradeScreenSprite = this.add.sprite("upgradeScreen", "upgradeLayer");
+        this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        this.upgradeLayer.addNode(this.upgradeScreenSprite);
+        this.upgradeScreenSprite.scale.set(0.4, 0.4);
+        this.upgradeLayer.setHidden(true); // Hide the layer initially
 
     //create level selection screen
     this.levelSelectionLayer = new Layer(this, "levelSelectionLayer");
@@ -420,6 +446,23 @@ private levelButton4: Label;
     this.receiver.subscribe("level 4");
 
 
+        //upgrade health button
+        this.upgradeHealth = <Button>this.add.uiElement(
+          UIElementType.BUTTON,
+          "timer",
+          {
+            position: new Vec2(this.viewport.getHalfSize().x, 225),
+            text: "Upgrade Health",
+          }
+        );
+        // Remove the font-related line if you don't have custom fonts
+        this.upgradeHealth.borderColor = Color.BLACK;
+        this.upgradeHealth.textColor = Color.WHITE;
+        this.upgradeHealth.backgroundColor = Color.BLACK;
+        this.upgradeHealth.size.set(160, 35);
+        this.upgradeHealth.fontSize = 40;
+        this.upgradeHealth.onClickEventId = "upgrade health";
+        this.receiver.subscribe("upgrade health");
     
 
     this.resumeButton.visible = false;
@@ -432,6 +475,7 @@ private levelButton4: Label;
     this.levelButton2.visible = false;
     this.levelButton3.visible = false;
     this.levelButton4.visible = false;
+    this.upgradeHealth.visible = false;
   }
 
 
@@ -443,14 +487,32 @@ private levelButton4: Label;
         this.handleEvent(this.receiver.getNextEvent());
     }
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
+    this.energybars.forEach((energybar) => energybar.update(deltaT));
+
     if (Input.isKeyJustPressed("p")) {
         this.emitter.fireEvent(BattlerEvent.PAUSE);
+        if (!this.GameIsPaused) {
+          this.resumeButton.visible = true;
+          this.levelSelectionButton.visible = true;
+          this.ControlsButton.visible = true;
+          this.helpButton.visible = true;
+          this.menuButton.visible = true;
+
+        } else {
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
+        }
         console.log("MainHW4Scene has detected a p press");
     };
   if(this.GameIsPaused){
     this.initializeNPCsBool=false;
   }else{
-    this.initializeNPCsBool=true;
+    // this.initializeNPCsBool=true;
+    this.initializeNPCsBool=false;
+
   }
     this.chasePlayer();
     if (Input.isKeyJustPressed("1")) {
@@ -484,6 +546,35 @@ private levelButton4: Label;
     if (Input.isKeyJustPressed("0")) {
         this.initializeNPCsBool = true;
     };
+    if (Input.isKeyJustPressed("=")) {
+      // Restore player's health to maximum
+      this.player.energy = this.player.energy + 100;
+  }
+  if (this.player.energy >= this.player.maxEnergy) {
+    // Deduct the current max energy from the player's energy
+    this.player.energy -= this.player.maxEnergy;
+    // Increase the max energy by 20%
+    this.player.maxEnergy *= 1.2;
+    // Increment the player's level
+    this.playerLevel++;
+
+    // Update the level label text
+    if (!this.lvlLabel) {
+        this.lvlLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 110) });
+        this.lvlLabel.textColor = Color.WHITE;
+        this.lvlLabel.font = "PixelSimple";
+        this.uiLayer = this.getLayer("UI");
+        this.uiLayer.addNode(this.lvlLabel);
+    }
+    this.lvlLabel.text = `lv. ${this.playerLevel}`;
+
+    // Show the upgrade screen and pause the game
+    this.emitter.fireEvent(BattlerEvent.PAUSE);
+    this.upgradeLayer.setHidden(false);
+    this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.upgradeHealth.visible = true;
+}
+
     if (Input.isKeyJustPressed("f")) {
         // Restore player's health to maximum
         this.player.health = this.player.maxHealth;
@@ -494,9 +585,9 @@ private levelButton4: Label;
   }
     if (this.player.health <=0){
       {
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
-        this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
-        }
+      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music4" });
+      this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
+      }
       this.sceneManager.changeToScene(GameOver);
     }
     // Check if the 'i' key is pressed
@@ -534,10 +625,41 @@ private levelButton4: Label;
             }
         }
     }
-    if (!this.GameIsPaused && Input.isMouseJustPressed(0)) {
-        // Play the attack sound
-        this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
-    }
+// Inside the updateScene method
+if (Input.isKeyJustPressed("]")) {
+  // Reduce the original mouse press cooldown by 0.3 seconds
+  this.originalMousePressCooldown -= 0.1; // 0.3 seconds in milliseconds
+
+  // Ensure the cooldown doesn't go below zero
+  this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
+
+  // Update the mouse cooldown timer if it's greater than the new original cooldown
+  this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown);
+}
+
+// Inside the updateScene method
+if (!this.GameIsPaused) {
+  // Update the mouse cooldown timer
+  if (this.mouseCooldownTimer > 0) {
+      this.mouseCooldownTimer -= deltaT;
+
+      // Ensure the timer doesn't go below zero
+      this.mouseCooldownTimer = Math.max(0, this.mouseCooldownTimer);
+  }
+
+  if (Input.isMouseJustPressed(0)) {
+      if (this.mouseCooldownTimer <= 0) {
+          // Play the attack sound
+          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+
+          // Apply cooldown
+          this.mouseCooldownTimer = this.originalMousePressCooldown;
+      }
+  }
+
+  console.log(this.mouseCooldownTimer);
+}
+
     if (this.initializeNPCsBool) {
 
       this.npcInitTimer -= deltaT;
@@ -577,6 +699,7 @@ if (!this.GameIsPaused) {
 const minutes = Math.floor(this.elapsedTime / 60);
 const seconds = Math.floor(this.elapsedTime % 60);
 this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
 
 }
 
@@ -652,7 +775,7 @@ this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).pa
 //     });
 // }
 
-protected chasePlayer(): void {
+ protected chasePlayer(): void {
   // First, check if the game is paused
   if (this.GameIsPaused) {
     return; // If paused, exit the function
@@ -830,6 +953,16 @@ protected chasePlayer(): void {
           this.sceneManager.changeToScene(Level4);
           break;
 
+          case "upgrade health":
+            console.log("4 has been pressed.");
+            this.player.maxHealth = this.player.maxHealth *1.2;
+            this.player.health = this.player.maxHealth;
+            this.upgradeLayer.setHidden(true);
+            this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+            this.emitter.fireEvent(BattlerEvent.PAUSE);
+            this.upgradeHealth.visible = false;
+            break;
+
 
       case BattlerEvent.BATTLER_KILLED: {
         this.handleBattlerKilled(event);
@@ -844,11 +977,6 @@ protected chasePlayer(): void {
       }
       case BattlerEvent.PAUSE: {
         if (!this.GameIsPaused) {
-          this.resumeButton.visible = true;
-          this.levelSelectionButton.visible = true;
-          this.ControlsButton.visible = true;
-          this.helpButton.visible = true;
-          this.menuButton.visible = true;
           
           this.battlers.forEach(battler => {
             (<GameNode>(<Actor>battler)).freeze();
@@ -859,11 +987,6 @@ protected chasePlayer(): void {
           const center = this.viewport.getCenter();
           this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
         } else {
-          this.resumeButton.visible = false;
-          this.levelSelectionButton.visible = false;
-          this.ControlsButton.visible = false;
-          this.helpButton.visible = false;
-          this.menuButton.visible = false;
           // Optionally, handle the case when the game is paused
           // For example, unfreeze battlers or perform some other action
           this.battlers.forEach(battler => {
@@ -876,6 +999,7 @@ protected chasePlayer(): void {
         }
         break
       }
+      
       //handle pause game event
       default: {
         throw new Error(`Unhandled event type "${event.type}" caught in HW4Scene event handler`);
@@ -907,12 +1031,19 @@ protected chasePlayer(): void {
 
   protected addUI() {
     // In-game labels
-    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Main Level" });
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Fourth Level" });
 
     this.levelLabel.textColor = Color.BLACK
     this.levelLabel.font = "PixelSimple";
     this.uiLayer = this.getLayer("UI");
     this.uiLayer.addNode(this.levelLabel);
+
+    this.lvlLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 110), text: "lv. 1" });
+
+    this.lvlLabel.textColor = Color.WHITE
+    this.lvlLabel.font = "PixelSimple";
+    this.uiLayer = this.getLayer("UI");
+    this.uiLayer.addNode(this.lvlLabel);
 
         //timer
         this.timerLabel = <Button>this.add.uiElement(
@@ -1019,18 +1150,21 @@ protected chasePlayer(): void {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 2;
-    this.player.health = 100;
+    this.player.health = 1000;
     this.player.maxHealth = 1000;
     this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED;
-
-    // Increase the player's speed
-    this.player.speed *= 20; // Double the player's speed
+    this.player.energy = 0;
+    this.player.maxEnergy = 1000;
+    this.player.speed = 10000000;
 
     // Give the player physics
     this.player.addPhysics(new AABB(Vec2.ZERO, new Vec2(8, 8)));
     // Give the player a healthbar
     let healthbar = new HealthbarHUD(this, this.player, "primary", { size: this.player.size.clone().scaled(2, 1 / 2), offset: this.player.size.clone().scaled(0, -1 / 2) });
+    let energybar = new EnergybarHUD(this, this.player, "primary", { size: this.player.size.clone().scaled(2, 1 / 2), offset: this.player.size.clone().scaled(0, -3 / 4)});
     this.healthbars.set(this.player.id, healthbar);
+    this.energybars.set(this.player.id, energybar);
+
     // Give the player PlayerAI
     this.player.addAI(PlayerAI);
     // Start the player in the "IDLE" animation
@@ -1118,6 +1252,8 @@ protected chasePlayer(): void {
       npc.speed = 10;
       npc.health = 20;
       npc.maxHealth = 20;
+      npc.energy = 100;
+      npc.maxEnergy = 100;
       npc.navkey = "navmesh";
       // Give the NPC a healthbar
       let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
@@ -1139,6 +1275,8 @@ protected chasePlayer(): void {
       npc.speed = 10;
       npc.health = 50;
       npc.maxHealth = 50;
+        npc.energy = 100;
+      npc.maxEnergy = 100;
       npc.navkey = "navmesh";
       npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
       // Play the NPCs "IDLE" animation 

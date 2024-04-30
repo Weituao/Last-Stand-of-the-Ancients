@@ -116,7 +116,10 @@ private upgradeHealth: Label;
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
   private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
-
+// Define a variable to store the original mouse press cooldown duration
+private originalMousePressCooldown: number = 1; // 1 second in milliseconds
+// Define a variable to track the current mouse cooldown timer value
+private mouseCooldownTimer: number = this.originalMousePressCooldown;
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
@@ -623,10 +626,41 @@ private upgradeHealth: Label;
             }
         }
     }
-    if (!this.GameIsPaused && Input.isMouseJustPressed(0)) {
-        // Play the attack sound
-        this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
-    }
+// Inside the updateScene method
+if (Input.isKeyJustPressed("]")) {
+  // Reduce the original mouse press cooldown by 0.3 seconds
+  this.originalMousePressCooldown -= 0.1; // 0.3 seconds in milliseconds
+
+  // Ensure the cooldown doesn't go below zero
+  this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
+
+  // Update the mouse cooldown timer if it's greater than the new original cooldown
+  this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown);
+}
+
+// Inside the updateScene method
+if (!this.GameIsPaused) {
+  // Update the mouse cooldown timer
+  if (this.mouseCooldownTimer > 0) {
+      this.mouseCooldownTimer -= deltaT;
+
+      // Ensure the timer doesn't go below zero
+      this.mouseCooldownTimer = Math.max(0, this.mouseCooldownTimer);
+  }
+
+  if (Input.isMouseJustPressed(0)) {
+      if (this.mouseCooldownTimer <= 0) {
+          // Play the attack sound
+          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+
+          // Apply cooldown
+          this.mouseCooldownTimer = this.originalMousePressCooldown;
+      }
+  }
+
+  console.log(this.mouseCooldownTimer);
+}
+
     if (this.initializeNPCsBool) {
 
       this.npcInitTimer -= deltaT;
