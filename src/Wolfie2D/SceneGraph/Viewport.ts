@@ -41,7 +41,7 @@ export default class Viewport {
         this.view = new AABB(Vec2.ZERO, Vec2.ZERO);
         this.boundary = new AABB(Vec2.ZERO, Vec2.ZERO);
         this.lastPositions = new Queue();
-        this.smoothingFactor = 10;
+        this.smoothingFactor = 1;
         this.scrollZoomEnabled = false;
         this.canvasSize = Vec2.ZERO;
         this.focus = Vec2.ZERO;
