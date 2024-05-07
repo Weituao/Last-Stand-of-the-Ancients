@@ -3,11 +3,13 @@ import Unique from "../../../Wolfie2D/DataTypes/Interfaces/Unique";
 import Vec2 from "../../../Wolfie2D/DataTypes/Vec2";
 import Inventory from "../ItemSystem/Inventory";
 import { TargetableEntity } from "../Targeting/TargetableEntity";
-
+import AnimatedSprite from "../../../Wolfie2D/Nodes/Sprites/AnimatedSprite";
+import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 /**
  * An interface for a Battler
  */
-export default interface Battler extends TargetableEntity, Unique {
+export default interface Battler extends AnimatedSprite, TargetableEntity, Unique {
+    timer?: number; // Add timer property
 
     /** The Battlers group number */
     get battleGroup(): number;

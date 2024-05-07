@@ -3,8 +3,8 @@
     "spriteSheetImage": "player1.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
-    "columns": 5,
-    "rows": 1,
+    "columns": 3,
+    "rows": 3,
     "durationType": "time",
     "animations": [
         { 
@@ -13,7 +13,10 @@
         },
         {
             "name": "WALK",
-            "frames": [ {"index": 1, "duration": 16}, {"index": 2, "duration": 16}, {"index": 3, "duration": 16}, {"index": 4, "duration": 16} ]
+            "repeat": true,
+
+            "frames": [ {"index": 1, "duration": 8}, {"index": 2, "duration": 8}, {"index": 3, "duration": 8}, {"index": 4, "duration": 8},{"index": 5, "duration": 8},
+            {"index": 6, "duration": 8}, {"index": 7, "duration": 8},{"index": 8, "duration": 8} ]
         }
     ]
 }

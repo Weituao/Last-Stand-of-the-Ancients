@@ -3,17 +3,168 @@
     "spriteSheetImage": "demonBat.png",
     "spriteWidth": 24,
     "spriteHeight": 24,
+    "leftBuffer": 0,
+    "rightBuffer": 0,
+    "topBuffer": 0,
+    "bottomBuffer": 0,
     "columns": 5,
-    "rows": 1,
-    "durationType": "time",
+    "rows": 6,
     "animations": [
-        { 
-            "name": "IDLE",
-            "frames": [ {"index": 0, "duration": 1} ]
-        },
-        {
-            "name": "WALK",
-            "frames": [ {"index": 1, "duration": 16}, {"index": 2, "duration": 16}, {"index": 3, "duration": 16}, {"index": 4, "duration": 16} ]
-        }
+      {
+        "name": "IDLE",
+        "repeat": true,
+        "frames": [
+          {
+            "index": 0,
+            "duration": 10
+          }
+        ]
+      },
+      {
+        "name": "MOVE",
+        "repeat": true,
+        "frames": [
+          {
+            "index": 1,
+            "duration": 20
+          },
+          {
+            "index": 2,
+            "duration": 20
+          }
+        ]
+      },
+      {
+        "name": "ATTACK",
+        "repeat": true,
+        "frames": [
+          {
+            "index": 3,
+            "duration": 50
+          },
+          {
+            "index": 4,
+            "duration": 50
+          },
+          {
+            "index": 5,
+            "duration": 50
+          },
+          {
+            "index": 6,
+            "duration": 50
+          }
+        ]
+      },
+      {
+        "name": "GETTING_ATTACKED",
+        "repeat": true,
+        "frames": [
+          {
+            "index": 7,
+            "duration": 6
+          },
+          {
+            "index": 8,
+            "duration": 6
+          }
+        ]
+      },
+      {
+        "name": "SPAWNNING",
+        "repeat": false,
+        "next": "DEAD",
+        "frames": [
+          {
+            "index": 9,
+            "duration": 10
+          },
+          {
+            "index": 10,
+            "duration": 10
+          },
+          {
+            "index": 11,
+            "duration": 10
+          },
+          {
+            "index": 12,
+            "duration": 10
+          },
+          {
+            "index": 13,
+            "duration": 10
+          },
+          {
+            "index": 14,
+            "duration": 10
+          },
+          {
+            "index": 15,
+            "duration": 10
+          },
+          {
+            "index": 16,
+            "duration": 10
+          },
+          {
+            "index": 17,
+            "duration": 10
+          }
+        ]
+      },
+      {
+        "name": "DYING",
+        "repeat": false,
+        "next": "DEAD",
+        "frames": [
+          {
+            "index": 18,
+            "duration": 4
+          },
+          {
+            "index": 19,
+            "duration": 4
+          },
+          {
+            "index": 20,
+            "duration": 4
+          },
+          {
+            "index": 21,
+            "duration": 4
+          },
+          {
+            "index": 22,
+            "duration": 4
+          },
+          {
+            "index": 23,
+            "duration": 4
+          },
+          {
+            "index": 24,
+            "duration": 4
+          },
+          {
+            "index": 25,
+            "duration": 4
+          },
+          {
+            "index": 26,
+            "duration": 4
+          }
+        ]
+      },
+      {
+        "name": "DEAD",
+        "repeat": true,
+        "frames": [
+          {
+            "index": 26,
+            "duration": 20
+          }
+        ]
+      }
     ]
-}
+  }
