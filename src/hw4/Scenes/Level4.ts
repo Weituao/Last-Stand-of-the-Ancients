@@ -116,6 +116,8 @@ export default class Level4 extends HW4Scene {
   private levelButton3: Label;
   private levelButton4: Label;
   private upgradeHealth: Label;
+  private upgradeAttackSpeed: Label;
+  private upgradeAttackDamage: Label;
 
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
@@ -476,6 +478,42 @@ export default class Level4 extends HW4Scene {
     this.upgradeHealth.onClickEventId = "upgrade health";
     this.receiver.subscribe("upgrade health");
 
+    //upgrade health button
+    this.upgradeAttackSpeed = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 168),
+        text: "Upgrade attack speed",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.upgradeAttackSpeed.borderColor = Color.BLACK;
+    this.upgradeAttackSpeed.textColor = Color.WHITE;
+    this.upgradeAttackSpeed.backgroundColor = Color.BLACK;
+    this.upgradeAttackSpeed.size.set(160, 35);
+    this.upgradeAttackSpeed.fontSize = 40;
+    this.upgradeAttackSpeed.onClickEventId = "upgrade attack speed";
+    this.receiver.subscribe("upgrade attack speed");
+
+
+
+    this.upgradeAttackDamage = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 115),
+        text: "Upgrade attack damage",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.upgradeAttackDamage.borderColor = Color.BLACK;
+    this.upgradeAttackDamage.textColor = Color.WHITE;
+    this.upgradeAttackDamage.backgroundColor = Color.BLACK;
+    this.upgradeAttackDamage.size.set(160, 35);
+    this.upgradeAttackDamage.fontSize = 40;
+    this.upgradeAttackDamage.onClickEventId = "upgrade attack damage";
+    this.receiver.subscribe("upgrade attack damage");
 
     this.resumeButton.visible = false;
     this.levelSelectionButton.visible = false;
@@ -488,6 +526,10 @@ export default class Level4 extends HW4Scene {
     this.levelButton3.visible = false;
     this.levelButton4.visible = false;
     this.upgradeHealth.visible = false;
+    this.upgradeAttackSpeed.visible = false;
+
+    this.upgradeAttackDamage.visible = false;
+
   }
 
 
@@ -702,6 +744,8 @@ export default class Level4 extends HW4Scene {
       this.upgradeLayer.setHidden(false);
       this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
       this.upgradeHealth.visible = true;
+      this.upgradeAttackSpeed.visible = true;
+      this.upgradeAttackDamage.visible = true;
     }
     if (Input.isKeyJustPressed("[")) {
       // Restore player's health to maximum
@@ -1114,18 +1158,50 @@ export default class Level4 extends HW4Scene {
         this.sceneManager.changeToScene(Level4);
         break;
 
-      case "upgrade health":
-        console.log("4 has been pressed.");
-        this.player.maxHealth = this.player.maxHealth * 1.2;
-        this.previousPlayerHealth = this.player.health;
 
-        this.player.health = this.player.maxHealth;
-        this.upgradeLayer.setHidden(true);
-        this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-        this.emitter.fireEvent(BattlerEvent.PAUSE);
-        this.upgradeHealth.visible = false;
-        break;
-
+        case "upgrade health":{
+          console.log("4 has been pressed.");
+          this.player.maxHealth = this.player.maxHealth * 1.2;
+          this.player.health = this.player.maxHealth;
+          this.previousPlayerHealth = this.player.health;
+          this.upgradeLayer.setHidden(true);
+          this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.emitter.fireEvent(BattlerEvent.PAUSE);
+          this.upgradeHealth.visible = false;
+          this.upgradeAttackSpeed.visible = false;
+          this.upgradeAttackDamage.visible = false;
+          break;
+        }
+  
+        case "upgrade attack speed":{
+          console.log("4 has been pressed.");
+          this.originalMousePressCooldown -= 0.1; 
+          this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
+          this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown);        this.player.health = this.player.maxHealth;
+          this.previousPlayerHealth = this.player.health;
+          this.upgradeLayer.setHidden(true);
+          this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.emitter.fireEvent(BattlerEvent.PAUSE);
+          this.upgradeHealth.visible = false;
+          this.upgradeAttackSpeed.visible = false;
+          this.upgradeAttackDamage.visible = false;        
+          break;
+        }
+  
+        case "upgrade attack damage":{
+          console.log("4 has been pressed.");
+          this.player_damage = this.player_damage *2;
+          this.player.health = this.player.maxHealth;
+          this.previousPlayerHealth = this.player.health;
+          this.upgradeLayer.setHidden(true);
+          this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+          this.emitter.fireEvent(BattlerEvent.PAUSE);
+          this.upgradeHealth.visible = false;
+          this.upgradeAttackSpeed.visible = false;
+          this.upgradeAttackDamage.visible = false;        
+          break;
+        }
+  
 
       case BattlerEvent.BATTLER_KILLED: {
         this.handleBattlerKilled(event);
@@ -1406,9 +1482,9 @@ export default class Level4 extends HW4Scene {
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
     // Initialize the red healers
-    for (let i = 0; i < red.healers.length; i++) {
+    for (let i = 0; i < red.batSpawnPoint.length; i++) {
       let npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
-      npc.position.set(red.healers[i][0], red.healers[i][1]);
+      npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       
       npc.battleGroup = 1;
@@ -1430,9 +1506,9 @@ export default class Level4 extends HW4Scene {
       this.npc_battlers.push(npc);
   }
 
-    for (let i = 0; i < red.healers.length; i++) {
+    for (let i = 0; i < red.bugSpawnPoint.length; i++) {
       let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
-      npc.position.set(red.healers[i][0], red.healers[i][1]);
+      npc.position.set(red.bugSpawnPoint[i][0], red.bugSpawnPoint[i][1]);
       npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
       
       npc.battleGroup = 2;
@@ -1454,9 +1530,9 @@ export default class Level4 extends HW4Scene {
       this.npc_battlers.push(npc);
   }
 
-    for (let i = 0; i < red.healers.length; i++) {
+    for (let i = 0; i < red.demonSpawnPoint.length; i++) {
         let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
-        npc.position.set(red.healers[i][0], red.healers[i][1]);
+        npc.position.set(red.demonSpawnPoint[i][0], red.demonSpawnPoint[i][1]);
         npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         
         npc.battleGroup = 3;
