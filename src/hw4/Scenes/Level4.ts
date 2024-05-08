@@ -39,8 +39,8 @@ import Input from "../../Wolfie2D/Input/Input";
 import Sprite from "../../Wolfie2D/Nodes/Sprites/Sprite";
 import Layer from "../../Wolfie2D/Scene/Layer";
 import { GameEventType } from "../../Wolfie2D/Events/GameEventType";
-import Level1 from "./Level4";
-import Level2 from "./Level4";
+import Level2 from "./Level2";
+import Level1 from "./Level1";
 import Level3 from "./Level3";
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
@@ -495,80 +495,81 @@ export default class Level4 extends HW4Scene {
     }
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     this.energybars.forEach((energybar) => energybar.update(deltaT));
-  //   for (let i = 0; i < this.bullets.length; i++) {
-  //     let b: Sprite = this.bullets[i];
-  //     b.position.add(b._velocity);
-  //     if (this.player.position.distanceTo(b.position) >= this.getViewport().getHalfSize().x) {
-  //         b.destroy();
-  //         this.remove(b);
-  //         this.bullets.splice(this.bullets.indexOf(b), 1);
-  //         break;
-  //     } else {
-  //         let hit_actor: NPCActor = null;
-  //         this.npc_battlers.forEach(
-  //             (e: NPCActor) => {
-  //                 if (e.position.distanceTo(b.position) <= 10) {
-  //                     let h: HealthbarHUD = this.healthbars.get(e.id);
-  //                     h.visible = true;
-  //                     e.health -= 10;
-  //                     if (e.health <= 0) {
-  //                         h.visible = false;
-  //                     }
-  //                     hit_actor = e;
-  //                 }
-  //             }
-  //         );
-  //         if (hit_actor != null && hit_actor.health <= 0) {
-  //             this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
-  //             this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
-  //             this.player.energy += 20;
-  //             this.remove(hit_actor);
-  //         }
-  //         if (hit_actor != null) {
-  //             this.bullets.splice(this.bullets.indexOf(b), 1);
-  //             b.destroy();
-  //             this.remove(b);
-  //             break;
-  //         }
-  //     }
-  // }
-  
     for (let i = 0; i < this.bullets.length; i++) {
       let b: Sprite = this.bullets[i];
       b.position.add(b._velocity);
       if (this.player.position.distanceTo(b.position) >= this.getViewport().getHalfSize().x) {
-        b.destroy();
-        this.remove(b);
-        this.bullets.splice(this.bullets.indexOf(b), 1);
-        break;
-      }
-      else {
-        let hit_actor: NPCActor = null;
-        this.npc_battlers.forEach(
-          (e: NPCActor) => {
-            if (e.position.distanceTo(b.position) <= 10) {
-              // this.npc_battlers.splice(this.npc_battlers.indexOf(e), 1);
-              // this.battlers.splice(this.battlers.indexOf(e), 1);
-              let h: HealthbarHUD = this.healthbars.get(e.id);
-              h.visible = false;
-              e.health = 0;
-              hit_actor = e;
-              // this.bullets.splice(this.bullets.indexOf(b), 1);
-            }
-          }
-        );
-        if (hit_actor != null) {
-          this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
-          this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
-          this.bullets.splice(this.bullets.indexOf(b), 1);
-          this.player.energy = this.player.energy + 20;
           b.destroy();
-          hit_actor.destroy();
-          this.remove(b)
+          this.remove(b);
+          this.bullets.splice(this.bullets.indexOf(b), 1);
           break;
-        }
+      } else {
+          let hit_actor: NPCActor = null;
+          this.npc_battlers.forEach(
+              (e: NPCActor) => {
+                  if (e.position.distanceTo(b.position) <= 10) {
+                      let h: HealthbarHUD = this.healthbars.get(e.id);
+                      let damage = 15;
+                      h.visible = true;
+                      e.health -= damage;
+                      if (e.health <= 0) {
+                          h.visible = false;
+                      }
+                      hit_actor = e;
+                  }
+              }
+          );
+          if (hit_actor != null && hit_actor.health <= 0) {
+              this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
+              this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
+              this.player.energy += 20;
+              this.remove(hit_actor);
+          }
+          if (hit_actor != null) {
+              this.bullets.splice(this.bullets.indexOf(b), 1);
+              b.destroy();
+              this.remove(b);
+              break;
+          }
       }
-    }
+  }
+  
+    // for (let i = 0; i < this.bullets.length; i++) {
+    //   let b: Sprite = this.bullets[i];
+    //   b.position.add(b._velocity);
+    //   if (this.player.position.distanceTo(b.position) >= this.getViewport().getHalfSize().x) {
+    //     b.destroy();
+    //     this.remove(b);
+    //     this.bullets.splice(this.bullets.indexOf(b), 1);
+    //     break;
+    //   }
+    //   else {
+    //     let hit_actor: NPCActor = null;
+    //     this.npc_battlers.forEach(
+    //       (e: NPCActor) => {
+    //         if (e.position.distanceTo(b.position) <= 10) {
+    //           // this.npc_battlers.splice(this.npc_battlers.indexOf(e), 1);
+    //           // this.battlers.splice(this.battlers.indexOf(e), 1);
+    //           let h: HealthbarHUD = this.healthbars.get(e.id);
+    //           h.visible = false;
+    //           e.health -=10 ;
+    //           hit_actor = e;
+    //           // this.bullets.splice(this.bullets.indexOf(b), 1);
+    //         }
+    //       }
+    //     );
+    //     if (hit_actor != null) {
+    //       this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
+    //       this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
+    //       this.bullets.splice(this.bullets.indexOf(b), 1);
+    //       this.player.energy = this.player.energy + 20;
+    //       b.destroy();
+    //       hit_actor.destroy();
+    //       this.remove(b)
+    //       break;
+    //     }
+    //   }
+    // }
 
     // this.bullets.forEach((b) => b.update(deltaT));
     // this.bullets.forEach(
@@ -725,6 +726,7 @@ export default class Level4 extends HW4Scene {
     if (!this.GameIsPaused && (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d"))) {
       console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
       if (!this.isWalkingSoundPlaying) {
+        this.player.animation.play("WALK");
         this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
         this.isWalkingSoundPlaying = true; // Set a flag to indicate the walking sound is playing
       }
@@ -899,70 +901,73 @@ export default class Level4 extends HW4Scene {
   protected chasePlayer(): void {
     // First, check if the game is paused
     if (this.GameIsPaused) {
-      return; // If paused, exit the function
+        return; // If paused, exit the function
     }
 
     // Next, check if this.player is defined and has a position property.
     if (!this.player || !this.player.position) {
-      return; // Exit the function if player or player's position is undefined or null.
+        return; // Exit the function if player or player's position is undefined or null.
     }
-      const enemyBattleGroup = 3;  // This is just an example, adjust as needed.
 
-    // Define different minimum distances and speeds for each enemy battle group
+    // Define different minimum distances, speeds, and damage for each enemy battle group
     const enemyAttributes = {
-      1: { minDistance: 15, attackdistance: 40, speed: 0.9, damage:1 },  // Attributes for enemy battle group 1
-      2: { minDistance: 24, attackdistance: 60, speed: 0.5, damage:3},   // Attributes for enemy battle group 2
-      3: { minDistance: 26, attackdistance: 60, speed: 0.1, damage:5 }    // Attributes for enemy battle group 3
+        1: { minDistance: 15, speed: 0.9, damage: 100, attackInterval: 2000 },  // Attributes for enemy battle group 1
+        2: { minDistance: 24, speed: 0.35, damage: 10, attackInterval: 3000 },   // Attributes for enemy battle group 2
+        3: { minDistance: 26, speed: 0.25, damage: 15, attackInterval: 4000 }    // Attributes for enemy battle group 3
     };
 
-          // Get the attributes for the current enemy battle group
-          const attributes = enemyAttributes[enemyBattleGroup];
-          let minDistance = attributes.minDistance;
-          const speed = attributes.speed;
-          const damage = attributes.damage;
-          const attackdistance = attributes.attackdistance;
-      this.battlers.forEach((battler, index) => {
-        if (battler && battler.position && battler.battleGroup === enemyBattleGroup) {
-          const distanceToPlayer = battler.position.distanceTo(this.player.position);
-          if (distanceToPlayer < attackdistance) {
-            this.player.health -=damage;
-            console.log("Player seen, starting chase.");
-          } 
-        }
-      });
+    // Loop through all battlers to determine their actions
     this.battlers.forEach((battler, index) => {
-      if (battler && battler.position && battler.health > 0) {
-        // Determine the enemy battle group
-        const enemyBattleGroup = battler.battleGroup;
-        // Check if the enemy battle group is valid and has defined attributes
-        if (enemyBattleGroup in enemyAttributes) {
-          // Get the attributes for the current enemy battle group
-          const attributes = enemyAttributes[enemyBattleGroup];
-          let minDistance = attributes.minDistance;
-          const speed = attributes.speed;
+        if (battler && battler.position && battler.health > 0) {
+            // Determine the enemy battle group
+            const enemyBattleGroup = battler.battleGroup;
+            // Check if the enemy battle group is valid and has defined attributes
+            if (enemyBattleGroup in enemyAttributes) {
+                // Get the attributes for the current enemy battle group
+                const attributes = enemyAttributes[enemyBattleGroup];
+                let minDistance = attributes.minDistance;
+                const speed = attributes.speed;
+                const damage = attributes.damage;
+                const attackInterval = attributes.attackInterval;
 
-          // Calculate the direction vector towards the player
-          const direction = this.player.position.clone().sub(battler.position).normalize();
-          // Adjust enemy's position based on the direction and speed
-          battler.position.add(direction.scaled(speed));
+                // Calculate the direction vector towards the player
+                const direction = this.player.position.clone().sub(battler.position).normalize();
+                // Adjust enemy's position based on the direction and speed
+                battler.position.add(direction.scaled(speed));
 
-          // Check for collisions with other enemies
-          for (let otherBattler of this.battlers) {
-            if (otherBattler !== battler && otherBattler.position && otherBattler.health > 0) {
-              const distanceToOther = battler.position.distanceTo(otherBattler.position);
-              if (distanceToOther < minDistance) {
-                // If too close, adjust the position away from the other enemy
-                const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
-                battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
-              }
+                // Check if the player is within the attack range and timer is expired
+                if (battler.timer === undefined || battler.timer <= 0) {
+                    const distanceToPlayer = battler.position.distanceTo(this.player.position);
+                    if (distanceToPlayer < minDistance) {
+                        this.player.health -= damage;
+                        console.log("Player seen, starting chase.");
+                        // Reset the timer for the next attack
+                        battler.timer = attackInterval;
+                    }
+                } else {
+                    // Decrease the timer
+                    battler.timer -= 16; // Assuming the function is called approximately every 16 milliseconds
+                }
+
+                // Check for collisions with other enemies
+                for (let otherBattler of this.battlers) {
+                    if (otherBattler !== battler && otherBattler.position && otherBattler.health > 0) {
+                        const distanceToOther = battler.position.distanceTo(otherBattler.position);
+                        if (distanceToOther < minDistance) {
+                            // If too close, adjust the position away from the other enemy
+                            const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
+                            battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
+                        }
+                    }
+                }
+            } else {
+                console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
             }
-          }
-        } else {
-          console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
         }
-      }
     });
-  }
+}
+
+
   /**
    * Handle events from the rest of the game
    * @param event a game event
@@ -1166,7 +1171,7 @@ export default class Level4 extends HW4Scene {
 
   protected addUI() {
     // In-game labels
-    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "first Level" });
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Third Level" });
 
     this.levelLabel.textColor = Color.BLACK
     this.levelLabel.font = "PixelSimple";
@@ -1373,80 +1378,85 @@ export default class Level4 extends HW4Scene {
   //   }
   // }
 
-protected initializeNPCs(): void {
-  console.log("initializeNPCs has been called");
-  // Get the object data for the red enemies
-  let red = this.load.getObject("red");
-
-  for (let i = 0; i < red.healers.length; i++) {
-    let npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
-    npc.position.set(red.healers[i][0], red.healers[i][1]);
-    npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-    npc.battleGroup = 1;
-    npc.speed = 10;
-    npc.health = 20;
-    npc.maxHealth = 20;
-    npc.energy = 100;
-    npc.maxEnergy = 100;
-    npc.navkey = "navmesh";
-    // Give the NPC a healthbar
-    let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-    this.healthbars.set(npc.id, healthbar);
-    npc.addAI(HealerBehavior);
-    npc.animation.play("SPAWNNING");
-    if (npc.health > 0) {
-      npc.animation.queue("MOVE", true);
-  }
-    this.battlers.push(npc);
-    this.npc_battlers.push(npc);
-}
-
-for (let i = 0; i < red.enemies.length; i++) {
-  let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
-  npc.position.set(red.enemies[i][0], red.enemies[i][1]);
-  npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-  npc.battleGroup = 2
-  npc.speed = 10;
-  npc.health = 50;
-  npc.maxHealth = 50;
-    npc.energy = 100;
-  npc.maxEnergy = 100;
-  npc.navkey = "navmesh";
-  // Give the NPC a healthbar
-  let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-  this.healthbars.set(npc.id, healthbar);
-  npc.addAI(HealerBehavior);
-  npc.animation.play("SPAWNNING");
-  if (npc.health > 0) {
-    npc.animation.queue("MOVE", true);
-}
-  this.battlers.push(npc);
-  this.npc_battlers.push(npc);
-}
-
-  for (let i = 0; i < red.enemies.length; i++) {
-    let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
-    npc.position.set(red.enemies[i][0], red.enemies[i][1]);
-    npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-    npc.battleGroup = 3
-    npc.speed = 10;
-    npc.health = 50;
-    npc.maxHealth = 50;
+  protected initializeNPCs(): void {
+    console.log("initializeNPCs has been called");
+    // Get the object data for the red enemies
+    let red = this.load.getObject("red");
+    // Initialize the red healers
+    for (let i = 0; i < red.healers.length; i++) {
+      let npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
+      npc.position.set(red.healers[i][0], red.healers[i][1]);
+      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+      
+      npc.battleGroup = 1;
+      npc.speed = 10;
+      npc.health = 20;
+      npc.maxHealth = 20;
       npc.energy = 100;
-    npc.maxEnergy = 100;
-    npc.navkey = "navmesh";
-    // Give the NPC a healthbar
-    let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-    this.healthbars.set(npc.id, healthbar);
-    npc.addAI(HealerBehavior);
-    npc.animation.play("SPAWNNING");
-    if (npc.health > 0) {
-      npc.animation.queue("MOVE", true);
+      npc.maxEnergy = 100;
+      npc.navkey = "navmesh";
+      // Give the NPC a healthbar
+      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+      this.healthbars.set(npc.id, healthbar);
+      npc.addAI(HealerBehavior);
+      npc.animation.play("SPAWNNING");
+      if (npc.health > 0) {
+        npc.animation.queue("MOVE", true);
+    }
+      this.battlers.push(npc);
+      this.npc_battlers.push(npc);
   }
-    this.battlers.push(npc);
-    this.npc_battlers.push(npc);
+
+    for (let i = 0; i < red.healers.length; i++) {
+      let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
+      npc.position.set(red.healers[i][0], red.healers[i][1]);
+      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+      
+      npc.battleGroup = 2;
+    npc.speed = 15;
+    npc.health = 100;
+    npc.maxHealth = 100;
+      npc.energy = 100;
+      npc.maxEnergy = 100;
+      npc.navkey = "navmesh";
+      // Give the NPC a healthbar
+      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+      this.healthbars.set(npc.id, healthbar);
+      npc.addAI(HealerBehavior);
+      npc.animation.play("SPAWNNING");
+      if (npc.health > 0) {
+        npc.animation.queue("MOVE", true);
+    }
+      this.battlers.push(npc);
+      this.npc_battlers.push(npc);
   }
+
+    for (let i = 0; i < red.healers.length; i++) {
+        let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
+        npc.position.set(red.healers[i][0], red.healers[i][1]);
+        npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+        
+        npc.battleGroup = 3;
+      npc.speed = 15;
+      npc.health = 100;
+      npc.maxHealth = 100;
+        npc.energy = 100;
+        npc.maxEnergy = 100;
+        npc.navkey = "navmesh";
+        // Give the NPC a healthbar
+        let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+        this.healthbars.set(npc.id, healthbar);
+        npc.addAI(HealerBehavior);
+        npc.animation.play("SPAWNNING");
+        if (npc.health > 0) {
+          npc.animation.queue("MOVE", true);
+      }
+        this.battlers.push(npc);
+        this.npc_battlers.push(npc);
+    }
 }
+
+
   /**
    * Initialize the items in the scene (healthpacks and laser guns)
    */

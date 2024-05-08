@@ -8,7 +8,7 @@ import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 /**
  * An interface for a Battler
  */
-export default interface Battler extends AnimatedSprite, TargetableEntity, Unique {
+export default interface Battler extends TargetableEntity, Unique {
     timer?: number; // Add timer property
 
     /** The Battlers group number */
