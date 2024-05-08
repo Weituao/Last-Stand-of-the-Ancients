@@ -77,6 +77,7 @@ export default class Level1 extends HW4Scene {
   /** Healthbars for the battlers */
   private healthbars: Map<number, HealthbarHUD>;
   private energybars: Map<number, EnergybarHUD>;
+  
 
   private bases: BattlerBase[];
   private healthpacks: Array<Healthpack>;
@@ -122,8 +123,10 @@ export default class Level1 extends HW4Scene {
   private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
   // Define a variable to store the original mouse press cooldown duration
   private originalMousePressCooldown: number = 1; // 1 second in milliseconds
+  private player_damage: number = 1;
   // Define a variable to track the current mouse cooldown timer value
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
+  private previousPlayerHealth: number; // Add a property to store the previous player health
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
@@ -161,6 +164,8 @@ export default class Level1 extends HW4Scene {
     this.load.audio("music1", "hw4_assets/music/music1.wav");
     this.load.audio("walk", "hw4_assets/music/walk.wav");
     this.load.audio("attack", "hw4_assets/music/attack.wav");
+    this.load.audio("taking_damage", "hw4_assets/music/taking_damage.wav");
+
     this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
     this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
     this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
@@ -495,6 +500,7 @@ export default class Level1 extends HW4Scene {
     }
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     this.energybars.forEach((energybar) => energybar.update(deltaT));
+
     for (let i = 0; i < this.bullets.length; i++) {
       let b: Sprite = this.bullets[i];
       b.position.add(b._velocity);
@@ -509,9 +515,8 @@ export default class Level1 extends HW4Scene {
               (e: NPCActor) => {
                   if (e.position.distanceTo(b.position) <= 10) {
                       let h: HealthbarHUD = this.healthbars.get(e.id);
-                      let damage = 15;
                       h.visible = true;
-                      e.health -= damage;
+                      e.health -= this.player_damage;
                       if (e.health <= 0) {
                           h.visible = false;
                       }
@@ -601,25 +606,38 @@ export default class Level1 extends HW4Scene {
     //       }
     //   }
     // );
+    if (!this.previousPlayerHealth) {
+      this.previousPlayerHealth = this.player.health;
+  }
+  
+  if (this.player.health < this.previousPlayerHealth) {
+      // Update the previous player health for the next frame
+      this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
+      this.previousPlayerHealth = this.player.health;
+  }
 
-    if (Input.isKeyJustPressed("p")) {
+  
+
+    if (Input.isKeyJustPressed("p") && this.upgradeLayer.isHidden()
+    && this.controlLayer.isHidden() && this.levelSelectionLayer.isHidden()
+    && this.helpLayer.isHidden()) {
       this.emitter.fireEvent(BattlerEvent.PAUSE);
       if (!this.GameIsPaused) {
-        this.resumeButton.visible = true;
-        this.levelSelectionButton.visible = true;
-        this.ControlsButton.visible = true;
-        this.helpButton.visible = true;
-        this.menuButton.visible = true;
+          this.resumeButton.visible = true;
+          this.levelSelectionButton.visible = true;
+          this.ControlsButton.visible = true;
+          this.helpButton.visible = true;
+          this.menuButton.visible = true;
 
       } else {
-        this.resumeButton.visible = false;
-        this.levelSelectionButton.visible = false;
-        this.ControlsButton.visible = false;
-        this.helpButton.visible = false;
-        this.menuButton.visible = false;
+          this.resumeButton.visible = false;
+          this.levelSelectionButton.visible = false;
+          this.ControlsButton.visible = false;
+          this.helpButton.visible = false;
+          this.menuButton.visible = false;
       }
       console.log("MainHW4Scene has detected a p press");
-    };
+  };
     if (this.GameIsPaused) {
       this.initializeNPCsBool = false;
     } else {
@@ -661,7 +679,7 @@ export default class Level1 extends HW4Scene {
     };
     if (Input.isKeyJustPressed("=")) {
       // Restore player's health to maximum
-      this.player.energy = this.player.energy + 100;
+      this.player.energy = this.player.maxEnergy;
     }
     if (this.player.energy >= this.player.maxEnergy) {
       // Deduct the current max energy from the player's energy
@@ -686,6 +704,10 @@ export default class Level1 extends HW4Scene {
       this.upgradeLayer.setHidden(false);
       this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
       this.upgradeHealth.visible = true;
+    }
+    if (Input.isKeyJustPressed("[")) {
+      // Restore player's health to maximum
+      this.player_damage = this.player_damage * 2;
     }
 
     if (Input.isKeyJustPressed("f")) {
@@ -714,12 +736,14 @@ export default class Level1 extends HW4Scene {
         this.player.maxHealth = 10000;
         // Set player's health to the new max health value
         this.player.health = this.player.maxHealth;
+        
       } else {
         // If player's health has been modified, revert to the original max health
         if (this.originalMaxHealth !== null) {
           this.player.maxHealth = this.originalMaxHealth;
           // Set player's health to the original max health value
           this.player.health = this.originalMaxHealth;
+          
         }
       }
     }
@@ -767,6 +791,9 @@ export default class Level1 extends HW4Scene {
           this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
           // this.sceneGraph
           // let b = new BulletActor(this.player.position, new Vec2(0, 0));
+          this.player.animation.play("ATTACK", false);
+          this.player.animation.queue("WALK");
+
           let b = this.add.sprite("bullet", "primary");
           b.position.set(this.player.position.x, this.player.position.y);
           let speed = 2;
@@ -822,8 +849,6 @@ export default class Level1 extends HW4Scene {
     const minutes = Math.floor(this.elapsedTime / 60);
     const seconds = Math.floor(this.elapsedTime % 60);
     this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-
   }
 
   // protected chasePlayer(): void {
@@ -1097,6 +1122,8 @@ export default class Level1 extends HW4Scene {
         console.log("4 has been pressed.");
         this.player.maxHealth = this.player.maxHealth * 1.2;
         this.player.health = this.player.maxHealth;
+        this.previousPlayerHealth = this.player.health;
+
         this.upgradeLayer.setHidden(true);
         this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
         this.emitter.fireEvent(BattlerEvent.PAUSE);

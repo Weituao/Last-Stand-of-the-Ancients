@@ -3,8 +3,8 @@
     "spriteSheetImage": "player1.png",
     "spriteWidth": 32,
     "spriteHeight": 32,
-    "columns": 3,
-    "rows": 3,
+    "columns": 4,
+    "rows": 4,
     "durationType": "time",
     "animations": [
         { 
@@ -17,6 +17,11 @@
 
             "frames": [ {"index": 1, "duration": 8}, {"index": 2, "duration": 8}, {"index": 3, "duration": 8}, {"index": 4, "duration": 8},{"index": 5, "duration": 8},
             {"index": 6, "duration": 8}, {"index": 7, "duration": 8},{"index": 8, "duration": 8} ]
+        },
+        { 
+            "name": "ATTACK",
+            "frames": [ {"index": 9, "duration": 5}, {"index": 10, "duration": 5},{"index": 11, "duration": 5},{"index": 12, "duration": 5} ]
         }
+        
     ]
 }
