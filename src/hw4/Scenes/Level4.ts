@@ -126,6 +126,11 @@ export default class Level4 extends HW4Scene {
   private originalMousePressCooldown: number = 1; // 1 second in milliseconds
   private player_damage: number = 1;
   private previousPlayerHealth: number; // Add a property to store the previous player health
+  private enemyAttributes = {
+    1: { minDistance: 15, speed: 0.9, damage: 10, attackInterval: 500 },  // Attributes for enemy battle group 1
+    2: { minDistance: 24, speed: 0.35, damage: 20, attackInterval: 1500 },   // Attributes for enemy battle group 2
+    3: { minDistance: 26, speed: 0.25, damage: 50, attackInterval: 2500 }    // Attributes for enemy battle group 3
+};
 
   // Define a variable to track the current mouse cooldown timer value
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
@@ -754,6 +759,8 @@ export default class Level4 extends HW4Scene {
     if (Input.isKeyJustPressed("f")) {
       // Restore player's health to maximum
       this.player.health = this.player.maxHealth;
+      this.previousPlayerHealth = this.player.health;
+
     }
     if (Input.isKeyJustPressed("-")) {
       // Restore player's health to maximum
@@ -777,12 +784,16 @@ export default class Level4 extends HW4Scene {
         this.player.maxHealth = 10000;
         // Set player's health to the new max health value
         this.player.health = this.player.maxHealth;
+        this.previousPlayerHealth = this.player.health;
+
       } else {
         // If player's health has been modified, revert to the original max health
         if (this.originalMaxHealth !== null) {
           this.player.maxHealth = this.originalMaxHealth;
           // Set player's health to the original max health value
           this.player.health = this.originalMaxHealth;
+          this.previousPlayerHealth = this.player.health;
+
         }
       }
     }
@@ -849,16 +860,30 @@ export default class Level4 extends HW4Scene {
     }
 
     if (this.initializeNPCsBool) {
-
       this.npcInitTimer -= deltaT;
       // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
       if (this.npcInitTimer <= 0) {
-        this.initializeNPCs();
-        // Reset npcInitTimer back to npcInitInterval
-        this.npcInitTimer = this.npcInitInterval;
+          this.initializeNPCs();
+          // Reset npcInitTimer back to npcInitInterval
+          this.npcInitTimer = this.npcInitInterval;
+  
+          // Define the increase in damage for each enemy group
+          const damageIncreases = {
+              1: 5, // Increase for enemy group 1
+              2: 15, // Increase for enemy group 2
+              3: 20  // Increase for enemy group 3
+          };
+  
+          // Increase enemy damage for each enemy group
+          for (let group in damageIncreases) {
+              if (group in this.enemyAttributes) {
+                  this.enemyAttributes[group].damage += damageIncreases[group];
+              }
+          }
       }
       // ... rest of the update function ...
-    }
+  }
+  
     // Check if the game is paused
     if (!this.GameIsPaused) {
       // Update the timer only if it's not already stopped
@@ -974,22 +999,15 @@ export default class Level4 extends HW4Scene {
         return; // Exit the function if player or player's position is undefined or null.
     }
 
-    // Define different minimum distances, speeds, and damage for each enemy battle group
-    const enemyAttributes = {
-        1: { minDistance: 15, speed: 0.9, damage: 100, attackInterval: 2000 },  // Attributes for enemy battle group 1
-        2: { minDistance: 24, speed: 0.35, damage: 10, attackInterval: 3000 },   // Attributes for enemy battle group 2
-        3: { minDistance: 26, speed: 0.25, damage: 15, attackInterval: 4000 }    // Attributes for enemy battle group 3
-    };
-
     // Loop through all battlers to determine their actions
     this.battlers.forEach((battler, index) => {
         if (battler && battler.position && battler.health > 0) {
             // Determine the enemy battle group
             const enemyBattleGroup = battler.battleGroup;
             // Check if the enemy battle group is valid and has defined attributes
-            if (enemyBattleGroup in enemyAttributes) {
+            if (enemyBattleGroup in this.enemyAttributes) {
                 // Get the attributes for the current enemy battle group
-                const attributes = enemyAttributes[enemyBattleGroup];
+                const attributes = this.enemyAttributes[enemyBattleGroup];
                 let minDistance = attributes.minDistance;
                 const speed = attributes.speed;
                 const damage = attributes.damage;
