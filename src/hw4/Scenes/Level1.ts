@@ -665,6 +665,8 @@ private npc: NPCActor;
   if (this.player.health < this.previousPlayerHealth) {
       // Update the previous player health for the next frame
       this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
+      this.player.animation.play("GETTING_ATTACKED", false);
+      this.player.animation.queue("WALK");
       this.previousPlayerHealth = this.player.health;
   }
 

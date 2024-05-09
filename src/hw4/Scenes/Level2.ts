@@ -663,6 +663,8 @@ private npc: NPCActor;
   if (this.player.health < this.previousPlayerHealth) {
       // Update the previous player health for the next frame
       this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
+      this.player.animation.play("GETTING_ATTACKED", false);
+      this.player.animation.queue("WALK");
       this.previousPlayerHealth = this.player.health;
   }
     if (Input.isKeyJustPressed("p") && this.upgradeLayer.isHidden()
@@ -1510,14 +1512,14 @@ private npc: NPCActor;
     let red = this.load.getObject("red");
     // Initialize the red healers
     for (let i = 0; i < red.batSpawnPoint.length; i++) {
-         this.npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
+         this.npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
         this.npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
         this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         
-        this.npc.battleGroup = 1;
+        this.npc.battleGroup = 2;
         this.npc.speed = 10;
-        this.npc.health = 20;
-        this.npc.maxHealth = 20;
+        this.npc.health = 55;
+        this.npc.maxHealth = 55;
         this.npc.energy = 100;
         this.npc.maxEnergy = 100;
         this.npc.navkey = "navmesh";
