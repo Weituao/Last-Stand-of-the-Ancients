@@ -11,6 +11,8 @@ import Sprite from "../../../Wolfie2D/Nodes/Sprites/Sprite";
 export default interface Battler extends TargetableEntity, Unique {
     timer?: number; // Add timer property
 
+    shootCooldown?: number; // Add this property
+
     /** The Battlers group number */
     get battleGroup(): number;
     set battleGroup(value: number);

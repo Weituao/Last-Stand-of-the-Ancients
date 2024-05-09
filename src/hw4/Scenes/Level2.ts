@@ -57,6 +57,8 @@ export default class Level2 extends HW4Scene {
   // temp fix
   public bullets: Array<Sprite>;
 
+  public enemyBullets: Array<Sprite>;
+
   protected invincibilityTimer: Timer | null = null;
   private pauseScreenSprite: Sprite;
   private controlScreenSprite: Sprite;
@@ -121,8 +123,9 @@ export default class Level2 extends HW4Scene {
   private enemyAttributes = {
     1: { minDistance: 15, speed: 0.9, damage: 10, attackInterval: 500 },  // Attributes for enemy battle group 1
     2: { minDistance: 24, speed: 0.35, damage: 20, attackInterval: 1500 },   // Attributes for enemy battle group 2
-    3: { minDistance: 26, speed: 0.25, damage: 50, attackInterval: 2500 }    // Attributes for enemy battle group 3
-};
+    3: { minDistance: 26, speed: 0.25, damage: 50, attackInterval: 2500 },    // Attributes for enemy battle group 3
+    4: { minDistance: 20, speed: 0.5, damage: 15, attackInterval: 1000 }
+  };
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
   private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
@@ -132,6 +135,8 @@ export default class Level2 extends HW4Scene {
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
   private player_damage: number = 1;
   private previousPlayerHealth: number; // Add a property to store the previous player health
+
+  private int
 
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
@@ -143,6 +148,8 @@ export default class Level2 extends HW4Scene {
     this.laserguns = new Array<LaserGun>();
     this.healthpacks = new Array<Healthpack>();
     this.bullets = new Array<Sprite>();
+
+    this.enemyBullets = new Array<Sprite>();
   }
 
   /**
@@ -177,6 +184,7 @@ export default class Level2 extends HW4Scene {
     this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
     this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
     this.load.image("bullet", "hw4_assets/sprites/Bullet.png");
+    this.load.image("enemyBullet", "hw4_assets/sprites/Bullet.png");
   }
 
   /**
@@ -541,6 +549,7 @@ export default class Level2 extends HW4Scene {
  * @see Scene.updateScene
  */
   public override updateScene(deltaT: number): void {
+    this.updateEnemyShooting(deltaT);
     while (this.receiver.hasNextEvent()) {
       this.handleEvent(this.receiver.getNextEvent());
     }
@@ -551,40 +560,40 @@ export default class Level2 extends HW4Scene {
       let b: Sprite = this.bullets[i];
       b.position.add(b._velocity);
       if (this.player.position.distanceTo(b.position) >= this.getViewport().getHalfSize().x) {
+        b.destroy();
+        this.remove(b);
+        this.bullets.splice(this.bullets.indexOf(b), 1);
+        break;
+      } else {
+        let hit_actor: NPCActor = null;
+        this.npc_battlers.forEach(
+          (e: NPCActor) => {
+            if (e.position.distanceTo(b.position) <= 10) {
+              let h: HealthbarHUD = this.healthbars.get(e.id);
+              h.visible = true;
+              e.health -= this.player_damage;
+              if (e.health <= 0) {
+                h.visible = false;
+              }
+              hit_actor = e;
+            }
+          }
+        );
+        if (hit_actor != null && hit_actor.health <= 0) {
+          this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
+          this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
+          this.player.energy += 20;
+          this.remove(hit_actor);
+        }
+        if (hit_actor != null) {
+          this.bullets.splice(this.bullets.indexOf(b), 1);
           b.destroy();
           this.remove(b);
-          this.bullets.splice(this.bullets.indexOf(b), 1);
           break;
-      } else {
-          let hit_actor: NPCActor = null;
-          this.npc_battlers.forEach(
-              (e: NPCActor) => {
-                  if (e.position.distanceTo(b.position) <= 10) {
-                      let h: HealthbarHUD = this.healthbars.get(e.id);
-                      h.visible = true;
-                      e.health -= this.player_damage;
-                      if (e.health <= 0) {
-                          h.visible = false;
-                      }
-                      hit_actor = e;
-                  }
-              }
-          );
-          if (hit_actor != null && hit_actor.health <= 0) {
-              this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
-              this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
-              this.player.energy += 20;
-              this.remove(hit_actor);
-          }
-          if (hit_actor != null) {
-              this.bullets.splice(this.bullets.indexOf(b), 1);
-              b.destroy();
-              this.remove(b);
-              break;
-          }
+        }
       }
-  }
-  
+    }
+
     // for (let i = 0; i < this.bullets.length; i++) {
     //   let b: Sprite = this.bullets[i];
     //   b.position.add(b._velocity);
@@ -654,32 +663,32 @@ export default class Level2 extends HW4Scene {
     // );
     if (!this.previousPlayerHealth) {
       this.previousPlayerHealth = this.player.health;
-  }
-  
-  if (this.player.health < this.previousPlayerHealth) {
+    }
+
+    if (this.player.health < this.previousPlayerHealth) {
       // Update the previous player health for the next frame
       this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
       this.previousPlayerHealth = this.player.health;
-  }
+    }
     if (Input.isKeyJustPressed("p") && this.upgradeLayer.isHidden()
       && this.controlLayer.isHidden() && this.levelSelectionLayer.isHidden()
       && this.helpLayer.isHidden()) {
-        this.emitter.fireEvent(BattlerEvent.PAUSE);
-        if (!this.GameIsPaused) {
-            this.resumeButton.visible = true;
-            this.levelSelectionButton.visible = true;
-            this.ControlsButton.visible = true;
-            this.helpButton.visible = true;
-            this.menuButton.visible = true;
-  
-        } else {
-            this.resumeButton.visible = false;
-            this.levelSelectionButton.visible = false;
-            this.ControlsButton.visible = false;
-            this.helpButton.visible = false;
-            this.menuButton.visible = false;
-        }
-        console.log("MainHW4Scene has detected a p press");
+      this.emitter.fireEvent(BattlerEvent.PAUSE);
+      if (!this.GameIsPaused) {
+        this.resumeButton.visible = true;
+        this.levelSelectionButton.visible = true;
+        this.ControlsButton.visible = true;
+        this.helpButton.visible = true;
+        this.menuButton.visible = true;
+
+      } else {
+        this.resumeButton.visible = false;
+        this.levelSelectionButton.visible = false;
+        this.ControlsButton.visible = false;
+        this.helpButton.visible = false;
+        this.menuButton.visible = false;
+      }
+      //console.log("MainHW4Scene has detected a p press");
     }
     if (this.GameIsPaused) {
       this.initializeNPCsBool = false;
@@ -690,28 +699,28 @@ export default class Level2 extends HW4Scene {
     }
     this.chasePlayer();
     if (Input.isKeyJustPressed("1")) {
-      console.log("1 has been pressed.");
+      //console.log("1 has been pressed.");
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
 
       this.sceneManager.changeToScene(Level1);
     };
     if (Input.isKeyJustPressed("2")) {
-      console.log("2 has been pressed.");
+      //console.log("2 has been pressed.");
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
 
       this.sceneManager.changeToScene(Level2);
     };
     if (Input.isKeyJustPressed("3")) {
-      console.log("3 has been pressed.");
+      //console.log("3 has been pressed.");
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
 
       this.sceneManager.changeToScene(Level3);
     };
     if (Input.isKeyJustPressed("4")) {
-      console.log("4 has been pressed.");
+      //console.log("4 has been pressed.");
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
       this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
 
@@ -796,7 +805,7 @@ export default class Level2 extends HW4Scene {
       }
     }
     if (!this.GameIsPaused && (Input.isKeyJustPressed("w") || Input.isKeyJustPressed("a") || Input.isKeyJustPressed("s") || Input.isKeyJustPressed("d"))) {
-      console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
+      //console.log("One of 'w', 'a', 's', or 'd' has been pressed.");
       if (!this.isWalkingSoundPlaying) {
         this.player.animation.play("WALK");
         this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "walk", loop: true, holdReference: true });
@@ -861,26 +870,26 @@ export default class Level2 extends HW4Scene {
       this.npcInitTimer -= deltaT;
       // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
       if (this.npcInitTimer <= 0) {
-          this.initializeNPCs();
-          // Reset npcInitTimer back to npcInitInterval
-          this.npcInitTimer = this.npcInitInterval;
-  
-          // Define the increase in damage for each enemy group
-          const damageIncreases = {
-              1: 5, // Increase for enemy group 1
-              2: 15, // Increase for enemy group 2
-              3: 20  // Increase for enemy group 3
-          };
-  
-          // Increase enemy damage for each enemy group
-          for (let group in damageIncreases) {
-              if (group in this.enemyAttributes) {
-                  this.enemyAttributes[group].damage += damageIncreases[group];
-              }
+        this.initializeNPCs();
+        // Reset npcInitTimer back to npcInitInterval
+        this.npcInitTimer = this.npcInitInterval;
+
+        // Define the increase in damage for each enemy group
+        const damageIncreases = {
+          1: 5, // Increase for enemy group 1
+          2: 15, // Increase for enemy group 2
+          3: 20  // Increase for enemy group 3
+        };
+
+        // Increase enemy damage for each enemy group
+        for (let group in damageIncreases) {
+          if (group in this.enemyAttributes) {
+            this.enemyAttributes[group].damage += damageIncreases[group];
           }
+        }
       }
       // ... rest of the update function ...
-  }
+    }
     // Check if the game is paused
     if (!this.GameIsPaused) {
       // Update the timer only if it's not already stopped
@@ -909,6 +918,8 @@ export default class Level2 extends HW4Scene {
     const minutes = Math.floor(this.elapsedTime / 60);
     const seconds = Math.floor(this.elapsedTime % 60);
     this.timerLabel.text = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+    
 
 
   }
@@ -988,63 +999,242 @@ export default class Level2 extends HW4Scene {
   protected chasePlayer(): void {
     // First, check if the game is paused
     if (this.GameIsPaused) {
-        return; // If paused, exit the function
+      return; // If paused, exit the function
     }
 
     // Next, check if this.player is defined and has a position property.
     if (!this.player || !this.player.position) {
-        return; // Exit the function if player or player's position is undefined or null.
+      return; // Exit the function if player or player's position is undefined or null.
     }
 
     // Loop through all battlers to determine their actions
     this.battlers.forEach((battler, index) => {
-        if (battler && battler.position && battler.health > 0) {
-            // Determine the enemy battle group
-            const enemyBattleGroup = battler.battleGroup;
-            // Check if the enemy battle group is valid and has defined attributes
-            if (enemyBattleGroup in this.enemyAttributes) {
-                // Get the attributes for the current enemy battle group
-                const attributes = this.enemyAttributes[enemyBattleGroup];
-                let minDistance = attributes.minDistance;
-                const speed = attributes.speed;
-                const damage = attributes.damage;
-                const attackInterval = attributes.attackInterval;
+      if (battler && battler.position && battler.health > 0) {
+        // Determine the enemy battle group
+        const enemyBattleGroup = battler.battleGroup;
+        // Check if the enemy battle group is valid and has defined attributes
+        if (enemyBattleGroup in this.enemyAttributes) {
+          // Get the attributes for the current enemy battle group
+          const attributes = this.enemyAttributes[enemyBattleGroup];
+          let minDistance = attributes.minDistance;
+          const speed = attributes.speed;
+          const damage = attributes.damage;
+          const attackInterval = attributes.attackInterval;
 
-                // Calculate the direction vector towards the player
-                const direction = this.player.position.clone().sub(battler.position).normalize();
-                // Adjust enemy's position based on the direction and speed
-                battler.position.add(direction.scaled(speed));
+          // Calculate the direction vector towards the player
+          const direction = this.player.position.clone().sub(battler.position).normalize();
+          // Adjust enemy's position based on the direction and speed
+          battler.position.add(direction.scaled(speed));
 
-                // Check if the player is within the attack range and timer is expired
-                if (battler.timer === undefined || battler.timer <= 0) {
-                    const distanceToPlayer = battler.position.distanceTo(this.player.position);
-                    if (distanceToPlayer < minDistance) {
-                        this.player.health -= damage;
-                        console.log("Player seen, starting chase.");
-                        // Reset the timer for the next attack
-                        battler.timer = attackInterval;
-                    }
-                } else {
-                    // Decrease the timer
-                    battler.timer -= 16; // Assuming the function is called approximately every 16 milliseconds
-                }
-
-                // Check for collisions with other enemies
-                for (let otherBattler of this.battlers) {
-                    if (otherBattler !== battler && otherBattler.position && otherBattler.health > 0) {
-                        const distanceToOther = battler.position.distanceTo(otherBattler.position);
-                        if (distanceToOther < minDistance) {
-                            // If too close, adjust the position away from the other enemy
-                            const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
-                            battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
-                        }
-                    }
-                }
-            } else {
-                console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
+          // Check if the player is within the attack range and timer is expired
+          if (battler.timer === undefined || battler.timer <= 0) {
+            const distanceToPlayer = battler.position.distanceTo(this.player.position);
+            if (distanceToPlayer < minDistance) {
+              this.player.health -= damage;
+              console.log("Player seen, starting chase.");
+              // Reset the timer for the next attack
+              battler.timer = attackInterval;
             }
+          } else {
+            // Decrease the timer
+            battler.timer -= 16; // Assuming the function is called approximately every 16 milliseconds
+          }
+
+          // Check for collisions with other enemies
+          for (let otherBattler of this.battlers) {
+            if (otherBattler !== battler && otherBattler.position && otherBattler.health > 0) {
+              const distanceToOther = battler.position.distanceTo(otherBattler.position);
+              if (distanceToOther < minDistance) {
+                // If too close, adjust the position away from the other enemy
+                const separationDirection = battler.position.clone().sub(otherBattler.position).normalize();
+                battler.position.add(separationDirection.scaled(minDistance - distanceToOther));
+              }
+            }
+          }
+        } else {
+          console.warn(`Invalid enemy battle group: ${enemyBattleGroup}`);
         }
+      }
+
     });
+
+
+  }
+
+
+                // // Play the attack sound
+              // this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+              // this.player.animation.play("ATTACK", false);
+              // this.player.animation.queue("WALK");
+              // // this.sceneGraph
+              // // let b = new BulletActor(this.player.position, new Vec2(0, 0));
+              // let b = this.add.sprite("bullet", "primary");
+              // b.position.set(this.player.position.x, this.player.position.y);
+              // let speed = 2;
+              // let direction = new Vec2(0.5, 0.5);
+              // b._velocity = (Input.getGlobalMousePosition().sub(this.player.position)).normalize().scale(speed);
+              // console.log(b._velocity, "VVVVVVVVVVVVVVV")
+              // b.rotation = Math.atan2(direction.y, direction.x);
+              // this.bullets.push(b);
+              // // Apply cooldown
+              // this.mouseCooldownTimer = this.originalMousePressCooldown;
+  // protected updateEnemyShooting(deltaT: number): void {
+
+
+  //   console.log("updateEnemyShooting has been called");
+  //   for (let npc of this.npc_battlers) {
+  //     // Initialize `shootCooldown` dynamically if not already defined
+  //     if (npc.shootCooldown === undefined) {
+  //       npc.shootCooldown = 2000; // Initial value, 2 seconds
+  //     }
+
+  //     // Decrement the cooldown timer
+  //     npc.shootCooldown -= deltaT;
+
+  //     // If the cooldown timer is less than or equal to zero, the NPC can shoot
+  //     if (npc.shootCooldown <= 0) {
+  //       // Calculate direction and spawn the bullet
+  //       let direction = this.player.position.clone().sub(npc.position).normalize();
+  //       let bulletSpeed = 2;
+
+  //       let bullet = this.add.sprite("enemyBullet", "primary");
+  //       bullet.position.set(npc.position.x, npc.position.y);
+  //       bullet._velocity = direction.scale(bulletSpeed);
+
+  //       // Add bullet to the bullets array
+  //       this.enemyBullets.push(bullet);
+
+  //       // Reset the NPC's shoot cooldown timer
+  //       npc.shootCooldown = 2000; // Adjust cooldown duration as needed
+  //     }
+  //   }
+  // }
+
+
+//   protected updateEnemyShooting(deltaT: number): void {
+//     console.log("updateEnemyShooting: has been called");
+
+//     // Iterate through all NPC battlers that can shoot
+//     for (let npc of this.battlers) {
+//         console.log("updateEnemyShooting: Processing NPC", npc);
+
+//         // Initialize `shootCooldown` dynamically if not already defined
+//         if (npc.shootCooldown === undefined) {
+//             npc.shootCooldown = 20; // Initial cooldown value, 2 seconds
+//             console.log("updateEnemyShooting: Initializing shootCooldown for NPC to 2000ms");
+//         }
+
+//         // Decrement the cooldown timer
+//         npc.shootCooldown -= deltaT;
+//         console.log("updateEnemyShooting: Decrementing shootCooldown by deltaT", deltaT, "remaining cooldown:", npc.shootCooldown);
+
+//         // If the cooldown timer is less than or equal to zero, the NPC can shoot
+//         //if (npc.shootCooldown <= 1) {
+//             console.log("updateEnemyShooting: NPC is ready to shoot");
+
+//             // Play the attack sound if available (replace `attack` with the correct sound key)
+//             this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "attack" });
+//             console.log("updateEnemyShooting: Playing attack sound");
+
+//             // Calculate direction towards the player and create the bullet
+//             let direction = this.player.position.clone().sub(npc.position).normalize();
+//             //let direction = npc.position.clone().sub(this.player.position).normalize();
+//             let bulletSpeed = 2; // Adjust the speed as required
+//             console.log("updateEnemyShooting: Calculated bullet direction and speed:", direction, bulletSpeed);
+
+//             // Create and set up the enemy bullet sprite
+//             let bullet = this.add.sprite("enemyBullet", "primary");
+//             bullet.position.set(npc.position.x, npc.position.y);
+//             bullet._velocity = direction.scale(bulletSpeed);
+//             bullet.rotation = Math.atan2(direction.y, direction.x);
+//             console.log("updateEnemyShooting: Created bullet at position", bullet.position, "with velocity", bullet._velocity);
+
+//             // Add bullet to the enemy bullets array
+//             this.enemyBullets.push(bullet);
+//             console.log("updateEnemyShooting: Added bullet to enemyBullets array, current count:", this.enemyBullets.length);
+
+//             // Reset the NPC's shoot cooldown timer
+//             npc.shootCooldown = 20; // Adjust cooldown duration as needed
+//             console.log("updateEnemyShooting: Reset NPC shootCooldown to 2000ms");
+//         //} else {
+//             console.log("updateEnemyShooting: NPC is on cooldown, remaining cooldown:", npc.shootCooldown);
+//         //}
+//     }
+
+//         // Update all bullets' positions based on their velocities
+//         for (let i = 0; i < this.enemyBullets.length; i++) {
+//           let bullet = this.enemyBullets[i];
+//           bullet.position.add(bullet._velocity);
+  
+//           // If the bullet goes beyond the screen or hits an obstacle, remove it
+//           if (this.player.position.distanceTo(bullet.position) >= this.getViewport().getHalfSize().x) {
+//               bullet.destroy();
+//               this.enemyBullets.splice(i, 1);
+//               i--; // Adjust index after removal
+//           }
+//       }
+
+
+// }
+
+
+
+
+protected updateEnemyShooting(deltaT: number): void {
+  // Iterate through all NPC battlers
+  for (let npc of this.npc_battlers) {
+      // Initialize shoot cooldown if not already defined
+      if (npc.shootCooldown === undefined) {
+          npc.shootCooldown = 5; // Initial cooldown value, adjust as needed
+      }
+
+      // Decrement the cooldown timer
+      npc.shootCooldown -= deltaT;
+
+      // If the cooldown timer is less than or equal to zero, the NPC can shoot
+      if (npc.shootCooldown <= 0) {
+          // Calculate direction towards the player
+          let direction = this.player.position.clone().sub(npc.position).normalize();
+          let bulletSpeed = 3; // Adjust the speed as needed
+
+          // Create and set up the enemy bullet sprite
+          let bullet = this.add.sprite("enemyBullet", "primary");
+          bullet.position.set(npc.position.x, npc.position.y);
+          bullet._velocity = direction.scale(bulletSpeed);
+          bullet.rotation = Math.atan2(direction.y, direction.x);
+
+          // Add bullet to the enemy bullets array
+          this.enemyBullets.push(bullet);
+
+          // Reset the NPC's shoot cooldown timer
+          npc.shootCooldown = 5; // Adjust cooldown duration as needed
+      }
+  }
+
+  // Update all bullets' positions based on their velocities
+  for (let i = 0; i < this.enemyBullets.length; i++) {
+      let bullet = this.enemyBullets[i];
+      bullet.position.add(bullet._velocity);
+
+      // Check for collision with the player
+      if (bullet.boundary.overlaps(this.player.boundary)) {
+          // Player is hit by the bullet
+          this.player.health -= 10; // Adjust the damage value as needed
+
+          // Destroy the bullet and remove it from the array
+          bullet.destroy();
+          this.enemyBullets.splice(i, 1);
+          i--; // Adjust index after removal
+
+          // Optionally play a sound or trigger a hit effect
+          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
+      } else if (this.player.position.distanceTo(bullet.position) >= this.getViewport().getHalfSize().x) {
+          // If the bullet goes beyond the screen or hits an obstacle, remove it
+          bullet.destroy();
+          this.enemyBullets.splice(i, 1);
+          i--; // Adjust index after removal
+      }
+  }
 }
 
 
@@ -1078,7 +1268,7 @@ export default class Level2 extends HW4Scene {
           this.levelButton4.visible = true;
           this.backButton.visible = true;
         }
-        console.log("MainHW4Scene has detected a x press");
+        //console.log("MainHW4Scene has detected a x press");
         break;
 
 
@@ -1094,7 +1284,7 @@ export default class Level2 extends HW4Scene {
           this.menuButton.visible = false;
           this.backButton.visible = true;
         }
-        console.log("MainHW4Scene has detected a C press");
+        //console.log("MainHW4Scene has detected a C press");
         break;
 
 
@@ -1110,12 +1300,12 @@ export default class Level2 extends HW4Scene {
           this.menuButton.visible = false;
           this.backButton.visible = true;
         }
-        console.log("MainHW4Scene has detected a v press");
+        //console.log("MainHW4Scene has detected a v press");
         break;
 
 
       case "main menu":
-        console.log("1 has been pressed.");
+        //console.log("1 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
         this.viewport.getHalfSize().scale(3.5);
@@ -1142,7 +1332,7 @@ export default class Level2 extends HW4Scene {
 
 
       case "level 1":
-        console.log("1 has been pressed.");
+        //console.log("1 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
         this.viewport.getHalfSize().scale(3.5);
@@ -1150,7 +1340,7 @@ export default class Level2 extends HW4Scene {
         break;
 
       case "level 2":
-        console.log("2 has been pressed.");
+        //console.log("2 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
         this.viewport.getHalfSize().scale(3.5);
@@ -1158,7 +1348,7 @@ export default class Level2 extends HW4Scene {
         break;
 
       case "level 3":
-        console.log("3 has been pressed.");
+        //console.log("3 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
         this.viewport.getHalfSize().scale(3.5);
@@ -1166,55 +1356,55 @@ export default class Level2 extends HW4Scene {
         break;
 
       case "level 4":
-        console.log("4 has been pressed.");
+        //console.log("4 has been pressed.");
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "music2" });
         this.emitter.fireEvent(GameEventType.STOP_SOUND, { key: "walk" });
         this.viewport.getHalfSize().scale(3.5);
         this.sceneManager.changeToScene(Level4);
         break;
 
-        case "upgrade health":{
-          console.log("4 has been pressed.");
-          this.player.maxHealth = this.player.maxHealth * 1.2;
-          this.player.health = this.player.maxHealth;
-          this.previousPlayerHealth = this.player.health;
-          this.upgradeLayer.setHidden(true);
-          this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-          this.emitter.fireEvent(BattlerEvent.PAUSE);
-          this.upgradeHealth.visible = false;
-          this.upgradeAttackSpeed.visible = false;
-          this.upgradeAttackDamage.visible = false;
-          break;
-        }
-  
-        case "upgrade attack speed":{
-          console.log("4 has been pressed.");
-          this.originalMousePressCooldown -= 0.1; 
-          this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
-          this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown);        this.player.health = this.player.maxHealth;
-          this.previousPlayerHealth = this.player.health;
-          this.upgradeLayer.setHidden(true);
-          this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-          this.emitter.fireEvent(BattlerEvent.PAUSE);
-          this.upgradeHealth.visible = false;
-          this.upgradeAttackSpeed.visible = false;
-          this.upgradeAttackDamage.visible = false;        
-          break;
-        }
-  
-        case "upgrade attack damage":{
-          console.log("4 has been pressed.");
-          this.player_damage = this.player_damage *2;
-          this.player.health = this.player.maxHealth;
-          this.previousPlayerHealth = this.player.health;
-          this.upgradeLayer.setHidden(true);
-          this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-          this.emitter.fireEvent(BattlerEvent.PAUSE);
-          this.upgradeHealth.visible = false;
-          this.upgradeAttackSpeed.visible = false;
-          this.upgradeAttackDamage.visible = false;        
-          break;
-        }
+      case "upgrade health": {
+        //console.log("4 has been pressed.");
+        this.player.maxHealth = this.player.maxHealth * 1.2;
+        this.player.health = this.player.maxHealth;
+        this.previousPlayerHealth = this.player.health;
+        this.upgradeLayer.setHidden(true);
+        this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.upgradeHealth.visible = false;
+        this.upgradeAttackSpeed.visible = false;
+        this.upgradeAttackDamage.visible = false;
+        break;
+      }
+
+      case "upgrade attack speed": {
+        //console.log("4 has been pressed.");
+        this.originalMousePressCooldown -= 0.1;
+        this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
+        this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown); this.player.health = this.player.maxHealth;
+        this.previousPlayerHealth = this.player.health;
+        this.upgradeLayer.setHidden(true);
+        this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.upgradeHealth.visible = false;
+        this.upgradeAttackSpeed.visible = false;
+        this.upgradeAttackDamage.visible = false;
+        break;
+      }
+
+      case "upgrade attack damage": {
+        //console.log("4 has been pressed.");
+        this.player_damage = this.player_damage * 2;
+        this.player.health = this.player.maxHealth;
+        this.previousPlayerHealth = this.player.health;
+        this.upgradeLayer.setHidden(true);
+        this.upgradeScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+        this.emitter.fireEvent(BattlerEvent.PAUSE);
+        this.upgradeHealth.visible = false;
+        this.upgradeAttackSpeed.visible = false;
+        this.upgradeAttackDamage.visible = false;
+        break;
+      }
 
       case BattlerEvent.BATTLER_KILLED: {
         this.handleBattlerKilled(event);
@@ -1283,7 +1473,7 @@ export default class Level2 extends HW4Scene {
 
   protected addUI() {
     // In-game labels
-    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Third Level" });
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Second Level" });
 
     this.levelLabel.textColor = Color.BLACK
     this.levelLabel.font = "PixelSimple";
@@ -1491,34 +1681,34 @@ export default class Level2 extends HW4Scene {
   // }
 
   protected initializeNPCs(): void {
-    console.log("initializeNPCs has been called");
+    //console.log("initializeNPCs has been called");
     // Get the object data for the red enemies
     let red = this.load.getObject("red");
     // Initialize the red healers
     for (let i = 0; i < red.bugSpawnPoint.length; i++) {
-        let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
-        npc.position.set(red.bugSpawnPoint[i][0], red.bugSpawnPoint[i][1]);
-        npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-        
-        npc.battleGroup = 2;
+      let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
+      npc.position.set(red.bugSpawnPoint[i][0], red.bugSpawnPoint[i][1]);
+      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+
+      npc.battleGroup = 2;
       npc.speed = 15;
       npc.health = 100;
       npc.maxHealth = 100;
-        npc.energy = 100;
-        npc.maxEnergy = 100;
-        npc.navkey = "navmesh";
-        // Give the NPC a healthbar
-        let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-        this.healthbars.set(npc.id, healthbar);
-        npc.addAI(HealerBehavior);
-        npc.animation.play("SPAWNNING");
-        if (npc.health > 0) {
-          npc.animation.queue("MOVE", true);
+      npc.energy = 100;
+      npc.maxEnergy = 100;
+      npc.navkey = "navmesh";
+      // Give the NPC a healthbar
+      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
+      this.healthbars.set(npc.id, healthbar);
+      npc.addAI(HealerBehavior);
+      npc.animation.play("SPAWNNING");
+      if (npc.health > 0) {
+        npc.animation.queue("MOVE", true);
       }
-        this.battlers.push(npc);
-        this.npc_battlers.push(npc);
+      this.battlers.push(npc);
+      this.npc_battlers.push(npc);
     }
-}
+  }
 
 
   /**
