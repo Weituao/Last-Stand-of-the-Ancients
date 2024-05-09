@@ -43,7 +43,6 @@ import Level2 from "./Level2";
 import Level1 from "./Level1";
 import Level3 from "./Level3";
 import Level4 from "./Level4";
-
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import MainMenu from "./MainMenu";
@@ -128,12 +127,15 @@ export default class MainHW4Scene extends HW4Scene {
   private originalMousePressCooldown: number = 1; // 1 second in milliseconds
   private player_damage: number = 1;
   private previousPlayerHealth: number; // Add a property to store the previous player health
+  private increaseEnemyHealth = 5;
+
   private enemyAttributes = {
     1: { minDistance: 15, speed: 0.9, damage: 10, attackInterval: 500 },  // Attributes for enemy battle group 1
     2: { minDistance: 24, speed: 0.35, damage: 20, attackInterval: 1500 },   // Attributes for enemy battle group 2
     3: { minDistance: 26, speed: 0.25, damage: 50, attackInterval: 2500 }    // Attributes for enemy battle group 3
 };
 
+private npc: NPCActor;
   // Define a variable to track the current mouse cooldown timer value
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
 
@@ -866,6 +868,9 @@ export default class MainHW4Scene extends HW4Scene {
       // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
       if (this.npcInitTimer <= 0) {
           this.initializeNPCs();
+          this.npc.maxHealth = this.npc.maxHealth + this.increaseEnemyHealth; 
+          this.npc.health = this.npc.maxHealth;
+          this.increaseEnemyHealth = this.increaseEnemyHealth +10;
           // Reset npcInitTimer back to npcInitInterval
           this.npcInitTimer = this.npcInitInterval;
   
@@ -876,10 +881,17 @@ export default class MainHW4Scene extends HW4Scene {
               3: 20  // Increase for enemy group 3
           };
   
-          // Increase enemy damage for each enemy group
-          for (let group in damageIncreases) {
+          const speedIncreases = {
+            1: 0.05, // Increase for enemy group 1
+            2: 0.03, // Increase for enemy group 2
+            3: 0.02 // Increase for enemy group 3
+        };
+
+        for (let group in damageIncreases && speedIncreases) {
               if (group in this.enemyAttributes) {
                   this.enemyAttributes[group].damage += damageIncreases[group];
+                  this.enemyAttributes[group].speed += speedIncreases[group];
+
               }
           }
       }
@@ -1503,76 +1515,76 @@ export default class MainHW4Scene extends HW4Scene {
     let red = this.load.getObject("red");
     // Initialize the red healers
     for (let i = 0; i < red.batSpawnPoint.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
-      npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-      
-      npc.battleGroup = 1;
-      npc.speed = 10;
-      npc.health = 20;
-      npc.maxHealth = 20;
-      npc.energy = 100;
-      npc.maxEnergy = 100;
-      npc.navkey = "navmesh";
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-      npc.addAI(HealerBehavior);
-      npc.animation.play("SPAWNNING");
-      if (npc.health > 0) {
-        npc.animation.queue("MOVE", true);
-    }
-      this.battlers.push(npc);
-      this.npc_battlers.push(npc);
-  }
+      this.npc = this.add.animatedSprite(NPCActor, "demonBat", "primary");
+     this.npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
+     this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+     
+     this.npc.battleGroup = 1;
+     this.npc.speed = 10;
+     this.npc.health = 20;
+     this.npc.maxHealth = 20;
+     this.npc.energy = 100;
+     this.npc.maxEnergy = 100;
+     this.npc.navkey = "navmesh";
+     // Give the NPC a healthbar
+     let healthbar = new HealthbarHUD(this, this.npc, "primary", { size: this.npc.size.clone().scaled(2, 1 / 2), offset: this.npc.size.clone().scaled(0, -1 / 2) });
+     this.healthbars.set(this.npc.id, healthbar);
+     this.npc.addAI(HealerBehavior);
+     this.npc.animation.play("SPAWNNING");
+     if (this.npc.health > 0) {
+       this.npc.animation.queue("MOVE", true);
+   }
+     this.battlers.push(this.npc);
+     this.npc_battlers.push(this.npc);
+ }
 
-    for (let i = 0; i < red.bugSpawnPoint.length; i++) {
-      let npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
-      npc.position.set(red.bugSpawnPoint[i][0], red.bugSpawnPoint[i][1]);
-      npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-      
-      npc.battleGroup = 2;
-    npc.speed = 15;
-    npc.health = 100;
-    npc.maxHealth = 100;
-      npc.energy = 100;
-      npc.maxEnergy = 100;
-      npc.navkey = "navmesh";
-      // Give the NPC a healthbar
-      let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-      this.healthbars.set(npc.id, healthbar);
-      npc.addAI(HealerBehavior);
-      npc.animation.play("SPAWNNING");
-      if (npc.health > 0) {
-        npc.animation.queue("MOVE", true);
-    }
-      this.battlers.push(npc);
-      this.npc_battlers.push(npc);
-  }
-
-    for (let i = 0; i < red.demonSpawnPoint.length; i++) {
-        let npc = this.add.animatedSprite(NPCActor, "demon", "primary");
-        npc.position.set(red.demonSpawnPoint[i][0], red.demonSpawnPoint[i][1]);
-        npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+    for (let i = 0; i < red.batSpawnPoint.length; i++) {
+         this.npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
+        this.npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
+        this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         
-        npc.battleGroup = 3;
-      npc.speed = 15;
-      npc.health = 100;
-      npc.maxHealth = 100;
-        npc.energy = 100;
-        npc.maxEnergy = 100;
-        npc.navkey = "navmesh";
+        this.npc.battleGroup = 2;
+        this.npc.speed = 10;
+        this.npc.health = 55;
+        this.npc.maxHealth = 55;
+        this.npc.energy = 100;
+        this.npc.maxEnergy = 100;
+        this.npc.navkey = "navmesh";
         // Give the NPC a healthbar
-        let healthbar = new HealthbarHUD(this, npc, "primary", { size: npc.size.clone().scaled(2, 1 / 2), offset: npc.size.clone().scaled(0, -1 / 2) });
-        this.healthbars.set(npc.id, healthbar);
-        npc.addAI(HealerBehavior);
-        npc.animation.play("SPAWNNING");
-        if (npc.health > 0) {
-          npc.animation.queue("MOVE", true);
+        let healthbar = new HealthbarHUD(this, this.npc, "primary", { size: this.npc.size.clone().scaled(2, 1 / 2), offset: this.npc.size.clone().scaled(0, -1 / 2) });
+        this.healthbars.set(this.npc.id, healthbar);
+        this.npc.addAI(HealerBehavior);
+        this.npc.animation.play("SPAWNNING");
+        if (this.npc.health > 0) {
+          this.npc.animation.queue("MOVE", true);
       }
-        this.battlers.push(npc);
-        this.npc_battlers.push(npc);
+        this.battlers.push(this.npc);
+        this.npc_battlers.push(this.npc);
     }
+
+    for (let i = 0; i < red.batSpawnPoint.length; i++) {
+      this.npc = this.add.animatedSprite(NPCActor, "demon", "primary");
+     this.npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
+     this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
+     
+     this.npc.battleGroup = 3;
+     this.npc.speed = 10;
+     this.npc.health = 250;
+     this.npc.maxHealth = 250;
+     this.npc.energy = 100;
+     this.npc.maxEnergy = 100;
+     this.npc.navkey = "navmesh";
+     // Give the NPC a healthbar
+     let healthbar = new HealthbarHUD(this, this.npc, "primary", { size: this.npc.size.clone().scaled(2, 1 / 2), offset: this.npc.size.clone().scaled(0, -1 / 2) });
+     this.healthbars.set(this.npc.id, healthbar);
+     this.npc.addAI(HealerBehavior);
+     this.npc.animation.play("SPAWNNING");
+     if (this.npc.health > 0) {
+       this.npc.animation.queue("MOVE", true);
+   }
+     this.battlers.push(this.npc);
+     this.npc_battlers.push(this.npc);
+ }
 }
 
 
