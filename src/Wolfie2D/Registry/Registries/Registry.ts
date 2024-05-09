@@ -1,8 +1,14 @@
 import Map from "../../DataTypes/Collections/Map";
+import ShaderRegistry from "./ShaderRegistry";
 
 /** */
 export default abstract class Registry<T> extends Map<T>{
 
+    public static shaders = new ShaderRegistry();
+
+	static preload(){
+		this.shaders.preload();
+	}
     /** Preloads registry data */
     public abstract preload(): void;
 

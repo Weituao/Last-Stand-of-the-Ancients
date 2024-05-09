@@ -7,7 +7,9 @@ export enum BattlerEvent {
     HIT = "HIT",
     PAUSE="PAUSE"
 }
-
+export enum bulletshader {
+	cool_Bullets = "COOL_BULLETS"
+}
 export enum ItemEvent {
     ITEM_REQUEST = "ITEM_REQUEST",
 

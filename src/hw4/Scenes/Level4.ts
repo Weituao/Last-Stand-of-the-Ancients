@@ -21,7 +21,7 @@ import PlayerActor from "../Actors/PlayerActor";
 import GuardBehavior from "../AI/NPC/NPCBehavior/GaurdBehavior";
 import HealerBehavior from "../AI/NPC/NPCBehavior/HealerBehavior";
 import PlayerAI from "../AI/Player/PlayerAI";
-import { ItemEvent, PlayerEvent, BattlerEvent } from "../Events";
+import { ItemEvent, PlayerEvent, BattlerEvent, bulletshader } from "../Events";
 import Battler from "../GameSystems/BattleSystem/Battler";
 import BattlerBase from "../GameSystems/BattleSystem/BattlerBase";
 import HealthbarHUD from "../GameSystems/HUD/HealthbarHUD";
@@ -122,19 +122,20 @@ export default class Level4 extends HW4Scene {
 
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
-  private npcInitInterval: number = 25; // Interval in seconds to initialize NPCs
+  private npcInitInterval: number = 90; // Interval in seconds to initialize NPCs
   // Define a variable to store the original mouse press cooldown duration
   private originalMousePressCooldown: number = 1; // 1 second in milliseconds
-  private player_damage: number = 1;
+  private player_damage: number = 10;
+  private enemy_damage: number = 15;
   private previousPlayerHealth: number; // Add a property to store the previous player health
-  private increaseEnemyHealth = 5;
-  private experience = 20;
-
-
+  private increaseEnemyHealth1 = 2.5;
+  private increaseEnemyHealth2 = 2.5;
+  private increaseEnemyHealth3 = 20;
+  private experience = 30;
   private enemyAttributes = {
-    1: { minDistance: 20, speed: 0.9, damage: 10, attackInterval: 500 },  // Attributes for enemy battle group 1
-    2: { minDistance: 24, speed: 0.35, damage: 0, attackInterval: 1500 },   // Attributes for enemy battle group 2
-    3: { minDistance: 26, speed: 0.25, damage: 100, attackInterval: 2500 }    // Attributes for enemy battle group 3
+    1: { minDistance: 20, speed: 0.7, damage: 3.5, attackInterval: 600 },  // Attributes for enemy battle group 1
+    2: { minDistance: 24, speed: 0.45, damage: 0, attackInterval: 1600 },   // Attributes for enemy battle group 2
+    3: { minDistance: 26, speed: 0.5, damage: 85, attackInterval: 2100 }    // Attributes for enemy battle group 3
 };
 
 private npc: NPCActor;
@@ -562,6 +563,7 @@ private npc: NPCActor;
 
     
     for (let i = 0; i < this.bullets.length; i++) {
+      this.bullets[i].useCustomShader(bulletshader.cool_Bullets);
       let b: Sprite = this.bullets[i];
       b.position.add(b._velocity);
       if (this.player.position.distanceTo(b.position) >= this.getViewport().getHalfSize().x) {
@@ -736,7 +738,7 @@ private npc: NPCActor;
     if (Input.isKeyJustPressed("0")) {
       this.initializeNPCsBool = true;
     };
-    if (Input.isKeyJustPressed("=")) {
+    if (Input.isKeyJustPressed("=") && !this.GameIsPaused) {
       // Restore player's health to maximum
       this.player.energy = this.player.maxEnergy;
     }
@@ -744,7 +746,7 @@ private npc: NPCActor;
       // Deduct the current max energy from the player's energy
       this.player.energy -= this.player.maxEnergy;
       // Increase the max energy by 20%
-      this.player.maxEnergy *= 1.2;
+      this.player.maxEnergy = (this.player.maxEnergy+50) *1.1 ;
       // Increment the player's level
       this.playerLevel++;
 
@@ -795,7 +797,7 @@ private npc: NPCActor;
       if (this.increasedHealth) {
         // Increase player's max health to 10000
         this.originalMaxHealth = this.player.maxHealth;
-        this.player.maxHealth = 10000;
+        this.player.maxHealth = 10000000;
         // Set player's health to the new max health value
         this.player.health = this.player.maxHealth;
         this.previousPlayerHealth = this.player.health;
@@ -878,25 +880,23 @@ private npc: NPCActor;
       // When the timer reaches 0 or goes below, initialize NPCs and reset the timer
       if (this.npcInitTimer <= 0) {
           this.initializeNPCs();
-          this.npc.maxHealth = this.npc.maxHealth + this.increaseEnemyHealth; 
-          this.npc.health = this.npc.maxHealth;
-          this.increaseEnemyHealth = this.increaseEnemyHealth +10;
-          this.experience = this.experience + 20;
+          this.experience = this.experience + 10;
+          this.enemy_damage = this.enemy_damage + 5;
 
           // Reset npcInitTimer back to npcInitInterval
           this.npcInitTimer = this.npcInitInterval;
   
           // Define the increase in damage for each enemy group
           const damageIncreases = {
-              1: 5, // Increase for enemy group 1
-              2: 0, // Increase for enemy group 2
-              3: 20  // Increase for enemy group 3
+            1: 1, // Increase for enemy group 1
+            2: 0, // Increase for enemy group 2
+            3: 25  // Increase for enemy group 3
           };
   
           const speedIncreases = {
             1: 0.05, // Increase for enemy group 1
             2: 0.03, // Increase for enemy group 2
-            3: 0.02 // Increase for enemy group 3
+            3: 0.035 // Increase for enemy group 3
         };
 
         for (let group in damageIncreases && speedIncreases) {
@@ -1084,17 +1084,17 @@ protected updateEnemyShooting(deltaT: number): void {
       if (npc.battleGroup === 2 || npc.battleGroup === 3) {
           // Initialize shoot cooldown if not already defined
           if (npc.shootCooldown === undefined) {
-              npc.shootCooldown = 5; // Initial cooldown value, adjust as needed
+              npc.shootCooldown = 3; // Initial cooldown value, adjust as needed
           }
 
           // Decrement the cooldown timer
           npc.shootCooldown -= deltaT;
 
           // If the cooldown timer is less than or equal to zero, the NPC can shoot
-          if (npc.shootCooldown <= 0) {
-              // Calculate direction towards the player
+          if (npc.shootCooldown <= 0 && !this.GameIsPaused) {
+            // Calculate direction towards the player
               let direction = this.player.position.clone().sub(npc.position).normalize();
-              let bulletSpeed = 3; // Adjust the speed as needed
+              let bulletSpeed = 2; // Adjust the speed as needed
 
               // Create and set up the enemy bullet sprite
               let bullet = this.add.sprite("enemyBullet", "primary");
@@ -1106,7 +1106,7 @@ protected updateEnemyShooting(deltaT: number): void {
               this.enemyBullets.push(bullet);
 
               // Reset the NPC's shoot cooldown timer
-              npc.shootCooldown = 5; // Adjust cooldown duration as needed
+              npc.shootCooldown = 3; // Adjust cooldown duration as needed
           }
       }
   }
@@ -1119,7 +1119,7 @@ protected updateEnemyShooting(deltaT: number): void {
       // Check for collision with the player
       if (bullet.boundary.overlaps(this.player.boundary)) {
           // Player is hit by the bullet
-          this.player.health -= 20; // Adjust the damage value as needed
+          this.player.health -= this.enemy_damage; // Adjust the damage value as needed
 
           // Destroy the bullet and remove it from the array
           bullet.destroy();
@@ -1265,7 +1265,7 @@ protected updateEnemyShooting(deltaT: number): void {
 
         case "upgrade health":{
           console.log("4 has been pressed.");
-          this.player.maxHealth = this.player.maxHealth * 1.2;
+          this.player.maxHealth = this.player.maxHealth +25;
           this.player.health = this.player.maxHealth;
           this.previousPlayerHealth = this.player.health;
           this.upgradeLayer.setHidden(true);
@@ -1279,7 +1279,7 @@ protected updateEnemyShooting(deltaT: number): void {
   
         case "upgrade attack speed":{
           console.log("4 has been pressed.");
-          this.originalMousePressCooldown -= 0.1; 
+          this.originalMousePressCooldown = this.originalMousePressCooldown *0.96; 
           this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
           this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown);        this.player.health = this.player.maxHealth;
           this.previousPlayerHealth = this.player.health;
@@ -1294,7 +1294,7 @@ protected updateEnemyShooting(deltaT: number): void {
   
         case "upgrade attack damage":{
           console.log("4 has been pressed.");
-          this.player_damage = this.player_damage *2;
+          this.player_damage = this.player_damage + 2.5;
           this.player.health = this.player.maxHealth;
           this.previousPlayerHealth = this.player.health;
           this.upgradeLayer.setHidden(true);
@@ -1493,11 +1493,11 @@ protected updateEnemyShooting(deltaT: number): void {
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
     this.player.position.set(350, 350);
     this.player.battleGroup = 4;
-    this.player.health = 1000;
-    this.player.maxHealth = 1000;
+    this.player.health = 500;
+    this.player.maxHealth = 500;
     this.player.inventory.onChange = ItemEvent.INVENTORY_CHANGED;
     this.player.energy = 0;
-    this.player.maxEnergy = 1000;
+    this.player.maxEnergy = 500;
     this.player.speed = 10000000;
 
     // Give the player physics
@@ -1593,8 +1593,8 @@ protected updateEnemyShooting(deltaT: number): void {
      
      this.npc.battleGroup = 1;
      this.npc.speed = 10;
-     this.npc.health = 20;
-     this.npc.maxHealth = 20;
+     this.npc.maxHealth = 5 + this.increaseEnemyHealth1;
+     this.npc.health = this.npc.maxHealth;
      this.npc.energy = 100;
      this.npc.maxEnergy = 100;
      this.npc.navkey = "navmesh";
@@ -1617,8 +1617,8 @@ protected updateEnemyShooting(deltaT: number): void {
         
         this.npc.battleGroup = 2;
         this.npc.speed = 10;
-        this.npc.health = 55;
-        this.npc.maxHealth = 55;
+        this.npc.maxHealth = 20 + this.increaseEnemyHealth2;
+        this.npc.health = this.npc.maxHealth;
         this.npc.energy = 100;
         this.npc.maxEnergy = 100;
         this.npc.navkey = "navmesh";
@@ -1641,8 +1641,8 @@ protected updateEnemyShooting(deltaT: number): void {
      
      this.npc.battleGroup = 3;
      this.npc.speed = 10;
-     this.npc.health = 250;
-     this.npc.maxHealth = 250;
+     this.npc.maxHealth = 80 + this.increaseEnemyHealth3;
+     this.npc.health = this.npc.maxHealth;
      this.npc.energy = 100;
      this.npc.maxEnergy = 100;
      this.npc.navkey = "navmesh";
@@ -1656,7 +1656,13 @@ protected updateEnemyShooting(deltaT: number): void {
    }
      this.battlers.push(this.npc);
      this.npc_battlers.push(this.npc);
+
  }
+ this.increaseEnemyHealth1 = this.increaseEnemyHealth1 + 1.5;
+ this.increaseEnemyHealth2 = this.increaseEnemyHealth2 + 2;
+ this.increaseEnemyHealth3 = this.increaseEnemyHealth3 + 20;
+
+
 }
 
 

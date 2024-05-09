@@ -1,6 +1,10 @@
 import Game from "./Wolfie2D/Loop/Game";
 import StartMenu from "./hw4/Scenes/StartMenu";
 import { PlayerInput } from "./hw4/AI/Player/PlayerController";
+import Registry from "./Wolfie2D/Registry/Registries/Registry";
+import { bulletshader } from "./hw4/Events";
+import Vec2 from "./Wolfie2D/DataTypes/Vec2";
+import BulletShader from "./hw4/BulletShader";
 
 // The main function is your entrypoint into Wolfie2D. Specify your first scene and any options here.
 (function main(){
@@ -24,6 +28,12 @@ import { PlayerInput } from "./hw4/AI/Player/PlayerController";
         useWebGL: false,                        // Tell the game we want to use webgl
         showDebug: false                      // Whether to show debug messages. You can change this to true if you want
     }
+
+    Registry.shaders.registerAndPreloadItem(
+        bulletshader.cool_Bullets,   // The key of the shader program
+        BulletShader,           // The constructor of the shader program
+        "hw2_assets/shaders/BulletShader.vshader",   // The path to the vertex shader
+        "hw2_assets/shaders/BulletShader.fshader");  // the path to the fragment shader
 
     // Set up custom registries
 
