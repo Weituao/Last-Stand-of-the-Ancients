@@ -43,6 +43,7 @@ import Level2 from "./Level2";
 import Level1 from "./Level1";
 import Level3 from "./Level3";
 import Level4 from "./Level4";
+
 import Label from "../../Wolfie2D/Nodes/UIElements/Label";
 import { UIElementType } from "../../Wolfie2D/Nodes/UIElements/UIElementTypes";
 import MainMenu from "./MainMenu";
@@ -57,6 +58,7 @@ import GameLoop from "../../Wolfie2D/Loop/GameLoop";
 export default class MainHW4Scene extends HW4Scene {
   // temp fix
   public bullets: Array<Sprite>;
+  public enemyBullets: Array<Sprite>;
 
   protected invincibilityTimer: Timer | null = null;
   private pauseScreenSprite: Sprite;
@@ -128,17 +130,20 @@ export default class MainHW4Scene extends HW4Scene {
   private player_damage: number = 1;
   private previousPlayerHealth: number; // Add a property to store the previous player health
   private increaseEnemyHealth = 5;
+  private experience = 20;
+
 
   private enemyAttributes = {
-    1: { minDistance: 15, speed: 0.9, damage: 10, attackInterval: 500 },  // Attributes for enemy battle group 1
-    2: { minDistance: 24, speed: 0.35, damage: 20, attackInterval: 1500 },   // Attributes for enemy battle group 2
-    3: { minDistance: 26, speed: 0.25, damage: 50, attackInterval: 2500 }    // Attributes for enemy battle group 3
+    1: { minDistance: 20, speed: 0.9, damage: 10, attackInterval: 500 },  // Attributes for enemy battle group 1
+    2: { minDistance: 24, speed: 0.35, damage: 0, attackInterval: 1500 },   // Attributes for enemy battle group 2
+    3: { minDistance: 26, speed: 0.25, damage: 100, attackInterval: 2500 }    // Attributes for enemy battle group 3
 };
 
 private npc: NPCActor;
   // Define a variable to track the current mouse cooldown timer value
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
 
+  private int
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -149,6 +154,7 @@ private npc: NPCActor;
     this.laserguns = new Array<LaserGun>();
     this.healthpacks = new Array<Healthpack>();
     this.bullets = new Array<Sprite>();
+    this.enemyBullets = new Array<Sprite>();
   }
 
   /**
@@ -183,6 +189,8 @@ private npc: NPCActor;
     this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
     this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
     this.load.image("bullet", "hw4_assets/sprites/Bullet.png");
+    this.load.image("enemyBullet", "hw4_assets/sprites/Bullet.png");
+
   }
 
   /**
@@ -546,6 +554,8 @@ private npc: NPCActor;
  * @see Scene.updateScene
  */
   public override updateScene(deltaT: number): void {
+    this.updateEnemyShooting(deltaT);
+
     while (this.receiver.hasNextEvent()) {
       this.handleEvent(this.receiver.getNextEvent());
     }
@@ -579,7 +589,7 @@ private npc: NPCActor;
           if (hit_actor != null && hit_actor.health <= 0) {
               this.npc_battlers.splice(this.npc_battlers.indexOf(hit_actor), 1);
               this.battlers.splice(this.battlers.indexOf(hit_actor), 1);
-              this.player.energy += 20;
+              this.player.energy += this.experience;
               this.remove(hit_actor);
           }
           if (hit_actor != null) {
@@ -873,13 +883,15 @@ private npc: NPCActor;
           this.npc.maxHealth = this.npc.maxHealth + this.increaseEnemyHealth; 
           this.npc.health = this.npc.maxHealth;
           this.increaseEnemyHealth = this.increaseEnemyHealth +10;
+          this.experience = this.experience + 20;
+
           // Reset npcInitTimer back to npcInitInterval
           this.npcInitTimer = this.npcInitInterval;
   
           // Define the increase in damage for each enemy group
           const damageIncreases = {
               1: 5, // Increase for enemy group 1
-              2: 15, // Increase for enemy group 2
+              2: 0, // Increase for enemy group 2
               3: 20  // Increase for enemy group 3
           };
   
@@ -1066,6 +1078,66 @@ private npc: NPCActor;
     });
 }
 
+
+protected updateEnemyShooting(deltaT: number): void {
+  // Iterate through all NPC battlers
+  for (let npc of this.npc_battlers) {
+      // Check if the NPC belongs to battleGroup 2
+      if (npc.battleGroup === 2 || npc.battleGroup === 3) {
+          // Initialize shoot cooldown if not already defined
+          if (npc.shootCooldown === undefined) {
+              npc.shootCooldown = 3; // Initial cooldown value, adjust as needed
+          }
+
+          // Decrement the cooldown timer
+          npc.shootCooldown -= deltaT;
+
+          // If the cooldown timer is less than or equal to zero, the NPC can shoot
+          if (npc.shootCooldown <= 0) {
+              // Calculate direction towards the player
+              let direction = this.player.position.clone().sub(npc.position).normalize();
+              let bulletSpeed = 3; // Adjust the speed as needed
+
+              // Create and set up the enemy bullet sprite
+              let bullet = this.add.sprite("enemyBullet", "primary");
+              bullet.position.set(npc.position.x, npc.position.y);
+              bullet._velocity = direction.scale(bulletSpeed);
+              bullet.rotation = Math.atan2(direction.y, direction.x);
+
+              // Add bullet to the enemy bullets array
+              this.enemyBullets.push(bullet);
+
+              // Reset the NPC's shoot cooldown timer
+              npc.shootCooldown = 3; // Adjust cooldown duration as needed
+          }
+      }
+  }
+
+  // Update all bullets' positions based on their velocities
+  for (let i = 0; i < this.enemyBullets.length; i++) {
+      let bullet = this.enemyBullets[i];
+      bullet.position.add(bullet._velocity);
+
+      // Check for collision with the player
+      if (bullet.boundary.overlaps(this.player.boundary)) {
+          // Player is hit by the bullet
+          this.player.health -= 20; // Adjust the damage value as needed
+
+          // Destroy the bullet and remove it from the array
+          bullet.destroy();
+          this.enemyBullets.splice(i, 1);
+          i--; // Adjust index after removal
+
+          // Optionally play a sound or trigger a hit effect
+          this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
+      } else if (this.player.position.distanceTo(bullet.position) >= this.getViewport().getHalfSize().x) {
+          // If the bullet goes beyond the screen or hits an obstacle, remove it
+          bullet.destroy();
+          this.enemyBullets.splice(i, 1);
+          i--; // Adjust index after removal
+      }
+  }
+}
 
   /**
    * Handle events from the rest of the game
@@ -1540,9 +1612,9 @@ private npc: NPCActor;
      this.npc_battlers.push(this.npc);
  }
 
-    for (let i = 0; i < red.batSpawnPoint.length; i++) {
+    for (let i = 0; i < red.bugSpawnPoint.length; i++) {
          this.npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
-        this.npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
+        this.npc.position.set(red.bugSpawnPoint[i][0], red.bugSpawnPoint[i][1]);
         this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
         
         this.npc.battleGroup = 2;
@@ -1564,9 +1636,9 @@ private npc: NPCActor;
         this.npc_battlers.push(this.npc);
     }
 
-    for (let i = 0; i < red.batSpawnPoint.length; i++) {
+    for (let i = 0; i < red.demonSpawnPoint.length; i++) {
       this.npc = this.add.animatedSprite(NPCActor, "demon", "primary");
-     this.npc.position.set(red.batSpawnPoint[i][0], red.batSpawnPoint[i][1]);
+     this.npc.position.set(red.demonSpawnPoint[i][0], red.demonSpawnPoint[i][1]);
      this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
      
      this.npc.battleGroup = 3;
