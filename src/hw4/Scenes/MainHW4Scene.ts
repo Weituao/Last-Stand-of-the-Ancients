@@ -108,19 +108,7 @@ export default class MainHW4Scene extends HW4Scene {
   private playerLevel: number = 1;
 
 
-  private resumeButton: Button;
-  private levelSelectionButton: Label;
-  private ControlsButton: Label;
-  private helpButton: Label;
-  private menuButton: Label;
-  private backButton: Label;
-  private levelButton1: Label;
-  private levelButton2: Label;
-  private levelButton3: Label;
-  private levelButton4: Label;
-  private upgradeHealth: Label;
-  private upgradeAttackSpeed: Label;
-  private upgradeAttackDamage: Label;
+
 
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
@@ -144,7 +132,7 @@ private npc: NPCActor;
   // Define a variable to track the current mouse cooldown timer value
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
 
-  private int
+
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -156,6 +144,25 @@ private npc: NPCActor;
     this.healthpacks = new Array<Healthpack>();
     this.bullets = new Array<Sprite>();
     this.enemyBullets = new Array<Sprite>();
+    this.receiver.subscribe("healthpack");
+    this.receiver.subscribe("enemyDied");
+    this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
+    // Add a UI for health
+    this.addUILayer("health");
+    this.receiver.subscribe(PlayerEvent.PLAYER_KILLED);
+    this.receiver.subscribe(BattlerEvent.BATTLER_KILLED);
+    this.receiver.subscribe(BattlerEvent.BATTLER_RESPAWN);
+    this.receiver.subscribe(BattlerEvent.PAUSE);
+    // Create and add the pause layer
+    this.pauseLayer = new Layer(this, "pauseLayer");
+    this.pauseLayer = this.addLayer('pauseLayer', 99);
+
+    // Now, let's create a pause screen sprite and add it to the pause layer
+    this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
+    this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.pauseLayer.addNode(this.pauseScreenSprite);
+    this.pauseScreenSprite.scale.set(0.4, 0.4);
+    this.pauseLayer.setHidden(true); // Hide the layer initially
   }
 
   /**
