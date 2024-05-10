@@ -124,7 +124,7 @@ export default class MainHW4Scene extends HW4Scene {
 
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
-  private npcInitInterval: number = 90; // Interval in seconds to initialize NPCs
+  private npcInitInterval: number = 80; // Interval in seconds to initialize NPCs
   // Define a variable to store the original mouse press cooldown duration
   private originalMousePressCooldown: number = 1; // 1 second in milliseconds
   private player_damage: number = 10;
@@ -189,8 +189,8 @@ private npc: NPCActor;
     this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
     this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
     this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
-    this.load.image("bullet", "hw4_assets/sprites/Bullet.png");
-    this.load.image("enemyBullet", "hw4_assets/sprites/Bullet.png");
+    this.load.image("bullet", "hw4_assets/sprites/playerBullet.png");
+    this.load.image("enemyBullet", "hw4_assets/sprites/enemyBullet.png");
 
   }
 

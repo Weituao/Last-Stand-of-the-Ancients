@@ -185,8 +185,8 @@ private npc: NPCActor;
     this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
     this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
     this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
-    this.load.image("bullet", "hw4_assets/sprites/Bullet.png");
-    this.load.image("enemyBullet", "hw4_assets/sprites/Bullet.png");
+    this.load.image("bullet", "hw4_assets/sprites/playerBullet.png");
+    this.load.image("enemyBullet", "hw4_assets/sprites/enemyBullet.png");
 
   }
 
