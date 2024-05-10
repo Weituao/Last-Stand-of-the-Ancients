@@ -1466,8 +1466,9 @@ protected updateEnemyShooting(deltaT: number): void {
   }
 
   protected initializePlayer(): void {
+
     this.player = this.add.animatedSprite(PlayerActor, "player1", "primary");
-    this.player.position.set(350, 350);
+    this.player.position.set(750, 750);
     this.player.battleGroup = 4;
     this.player.health = 500;
     this.player.maxHealth = 500;
