@@ -1378,7 +1378,7 @@ protected updateEnemyShooting(deltaT: number): void {
 
   protected addUI() {
     // In-game labels
-    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Third Level" });
+    this.levelLabel = <Label>this.add.uiElement(UIElementType.LABEL, "UI", { position: new Vec2(this.viewport.getHalfSize().x, 15), text: "Main Level" });
 
     this.levelLabel.textColor = Color.BLACK
     this.levelLabel.font = "PixelSimple";
