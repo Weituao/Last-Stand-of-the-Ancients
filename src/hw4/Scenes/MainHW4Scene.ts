@@ -108,7 +108,19 @@ export default class MainHW4Scene extends HW4Scene {
   private playerLevel: number = 1;
 
 
-
+  private resumeButton: Button;
+  private levelSelectionButton: Label;
+  private ControlsButton: Label;
+  private helpButton: Label;
+  private menuButton: Label;
+  private backButton: Label;
+  private levelButton1: Label;
+  private levelButton2: Label;
+  private levelButton3: Label;
+  private levelButton4: Label;
+  private upgradeHealth: Label;
+  private upgradeAttackSpeed: Label;
+  private upgradeAttackDamage: Label;
 
 
   private npcInitTimer: number = 0; // Timer to track elapsed time for NPC initialization
@@ -132,7 +144,7 @@ private npc: NPCActor;
   // Define a variable to track the current mouse cooldown timer value
   private mouseCooldownTimer: number = this.originalMousePressCooldown;
 
-
+  private int
   public constructor(viewport: Viewport, sceneManager: SceneManager, renderingManager: RenderingManager, options: Record<string, any>) {
     super(viewport, sceneManager, renderingManager, options);
     this.battlers = new Array<Battler & Actor>();
@@ -144,25 +156,6 @@ private npc: NPCActor;
     this.healthpacks = new Array<Healthpack>();
     this.bullets = new Array<Sprite>();
     this.enemyBullets = new Array<Sprite>();
-    this.receiver.subscribe("healthpack");
-    this.receiver.subscribe("enemyDied");
-    this.receiver.subscribe(ItemEvent.ITEM_REQUEST);
-    // Add a UI for health
-    this.addUILayer("health");
-    this.receiver.subscribe(PlayerEvent.PLAYER_KILLED);
-    this.receiver.subscribe(BattlerEvent.BATTLER_KILLED);
-    this.receiver.subscribe(BattlerEvent.BATTLER_RESPAWN);
-    this.receiver.subscribe(BattlerEvent.PAUSE);
-    // Create and add the pause layer
-    this.pauseLayer = new Layer(this, "pauseLayer");
-    this.pauseLayer = this.addLayer('pauseLayer', 99);
-
-    // Now, let's create a pause screen sprite and add it to the pause layer
-    this.pauseScreenSprite = this.add.sprite("pauseScreen", "pauseLayer");
-    this.pauseScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-    this.pauseLayer.addNode(this.pauseScreenSprite);
-    this.pauseScreenSprite.scale.set(0.4, 0.4);
-    this.pauseLayer.setHidden(true); // Hide the layer initially
   }
 
   /**
@@ -180,7 +173,24 @@ private npc: NPCActor;
     // Load the enemy locations
     this.load.object("red", "hw4_assets/data/enemies/red.json");
     // Load the healthpack and lasergun loactions
+    this.load.object("healthpacks", "hw4_assets/data/items/healthpacks.json");
+    this.load.object("laserguns", "hw4_assets/data/items/laserguns.json");
+    // Load the healthpack, inventory slot, and laser gun sprites
+    this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
+    this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
+    this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
+    this.load.audio("music4", "hw4_assets/music/music4.wav");
+    this.load.audio("walk", "hw4_assets/music/walk.wav");
+    this.load.audio("attack", "hw4_assets/music/attack.wav");
+    this.load.audio("taking_damage", "hw4_assets/music/taking_damage.wav");
 
+    this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
+    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
+    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
+    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
+    this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
+    this.load.image("bullet", "hw4_assets/sprites/playerBullet.png");
+    this.load.image("enemyBullet", "hw4_assets/sprites/enemyBullet.png");
 
   }
 
@@ -353,26 +363,39 @@ private npc: NPCActor;
     this.helpButton.size.set(80, 16);
     this.helpButton.fontSize = 40;
     this.helpButton.onClickEventId = "help";
-, "levelSelectionLayer");
-    this.levelSelectionLayer = this.addLayer('levelSelectionLayer', 100);
-    // Now, let's create a level selection screen sprite and add it to the level selection screen layer
-    this.levelSelectionScreenSprite = this.add.sprite("levelSelectionScreen", "levelSelectionLayer");
-    this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-    this.levelSelectionLayer.addNode(this.levelSelectionScreenSprite);
-    this.levelSelectionScreenSprite.scale.set(0.4, 0.4);
-    this.levelSelectionLayer.setHidden(true); // Hide the layer initially
+    this.receiver.subscribe("help");
 
-    //create help screen
-    this.helpLayer = new Layer(this, "helpLayer");
-    this.helpLayer = this.addLayer('helpLayer', 100);
-    // Now, let's create a help screen sprite and add it to the help screen layer
-    this.helpScreenSprite = this.add.sprite("helpScreen", "helpLayer");
-    this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
-    this.helpLayer.addNode(this.helpScreenSprite);
-    this.helpScreenSprite.scale.set(0.4, 0.4);
-    this.helpLayer.setHidden(true); // Hide the layer initially
 
-    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music2", loop: true, holdReference: true });
+
+
+    //menu button
+    this.menuButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
+        text: "Main Menu",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.menuButton.borderColor = Color.BLACK;
+    this.menuButton.textColor = Color.WHITE;
+    this.menuButton.backgroundColor = Color.BLACK;
+    this.menuButton.size.set(80, 16);
+    this.menuButton.fontSize = 40;
+    this.menuButton.onClickEventId = "main menu";
+    this.receiver.subscribe("main menu");
+
+
+    //back button
+    this.backButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(30, 30),
+        text: "Back",
+      }
+    );
     // Remove the font-related line if you don't have custom fonts
     this.backButton.borderColor = Color.BLACK;
     this.backButton.textColor = Color.WHITE;
@@ -525,33 +548,6 @@ private npc: NPCActor;
 
     this.upgradeAttackDamage.visible = false;
 
-    this.backButton = <Button>this.add.uiElement(
-      UIElementType.BUTTON,
-      "timer",
-      {
-        position: new Vec2(30, 30),
-        text: "Back",
-      }
-    );
-    // Remove the font-related line if you don't have custom fonts
-    this.backButton.borderColor = Color.BLACK;
-    this.backButton.textColor = Color.WHITE;
-    this.backButton.backgroundColor = Color.BLACK;
-    this.backButton.size.set(80, 16);
-    this.backButton.fontSize = 40;
-    this.backButton.onClickEventId = "back";
-    this.receiver.subscribe("back");
-
-    //level 1 button
-    this.levelButton1 = <Button>this.add.uiElement(
-      UIElementType.BUTTON,
-      "timer",
-      {
-        position: new Vec2(this.viewport.getHalfSize().x, 127),
-        text: "Level 1",
-      }
-    );
-
   }
 
 
@@ -567,7 +563,7 @@ private npc: NPCActor;
     this.healthbars.forEach(healthbar => healthbar.update(deltaT));
     this.energybars.forEach((energybar) => energybar.update(deltaT));
 
-    
+   
     for (let i = 0; i < this.bullets.length; i++) {
       this.bullets[i].useCustomShader(bulletshader.cool_Bullets);
       let b: Sprite = this.bullets[i];
@@ -606,7 +602,7 @@ private npc: NPCActor;
           }
       }
   }
-  
+ 
     // for (let i = 0; i < this.bullets.length; i++) {
     //   let b: Sprite = this.bullets[i];
     //   b.position.add(b._velocity);
@@ -677,7 +673,7 @@ private npc: NPCActor;
     if (!this.previousPlayerHealth) {
       this.previousPlayerHealth = this.player.health;
   }
-  
+ 
   if (this.player.health < this.previousPlayerHealth) {
       // Update the previous player health for the next frame
       this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "taking_damage" });
@@ -695,7 +691,7 @@ private npc: NPCActor;
             this.ControlsButton.visible = true;
             this.helpButton.visible = true;
             this.menuButton.visible = true;
-  
+ 
         } else {
             this.resumeButton.visible = false;
             this.levelSelectionButton.visible = false;
@@ -891,14 +887,14 @@ private npc: NPCActor;
 
           // Reset npcInitTimer back to npcInitInterval
           this.npcInitTimer = this.npcInitInterval;
-  
+ 
           // Define the increase in damage for each enemy group
           const damageIncreases = {
             1: 1, // Increase for enemy group 1
             2: 0, // Increase for enemy group 2
             3: 25  // Increase for enemy group 3
           };
-  
+ 
           const speedIncreases = {
             1: 0.05, // Increase for enemy group 1
             2: 0.03, // Increase for enemy group 2
@@ -915,7 +911,7 @@ private npc: NPCActor;
       }
       // ... rest of the update function ...
   }
-  
+ 
     // Check if the game is paused
     if (!this.GameIsPaused) {
       // Update the timer only if it's not already stopped
@@ -987,7 +983,7 @@ private npc: NPCActor;
   //           battler.position.y += 0.2;
   //           console.log(`Moving battler down to y=${battler.position.y}`);
   //         }
-  //       } 
+  //       }
   //     } else {
   //       console.log("Battler is undefined, or does not have a position, or is not an enemy.");
   //     }
@@ -1015,7 +1011,7 @@ private npc: NPCActor;
   //           const direction = this.player.position.clone().sub(battler.position).normalize();
   //           // Adjust enemy's position based on the direction and speed
   //           battler.position.add(direction.scaled(enemySpeed));
-  //         } 
+  //         }
   //       }
   //     });
   // }
@@ -1284,10 +1280,10 @@ protected updateEnemyShooting(deltaT: number): void {
           this.upgradeAttackDamage.visible = false;
           break;
         }
-  
+ 
         case "upgrade attack speed":{
           console.log("4 has been pressed.");
-          this.originalMousePressCooldown = this.originalMousePressCooldown *0.96; 
+          this.originalMousePressCooldown = this.originalMousePressCooldown *0.96;
           this.originalMousePressCooldown = Math.max(0, this.originalMousePressCooldown);
           this.mouseCooldownTimer = Math.max(this.mouseCooldownTimer, this.originalMousePressCooldown);        this.player.health = this.player.maxHealth;
           this.previousPlayerHealth = this.player.health;
@@ -1299,7 +1295,7 @@ protected updateEnemyShooting(deltaT: number): void {
           this.upgradeAttackDamage.visible = false;        
           break;
         }
-  
+ 
         case "upgrade attack damage":{
           console.log("4 has been pressed.");
           this.player_damage = this.player_damage + 2.5;
@@ -1313,7 +1309,7 @@ protected updateEnemyShooting(deltaT: number): void {
           this.upgradeAttackDamage.visible = false;        
           break;
         }
-  
+ 
 
       case BattlerEvent.BATTLER_KILLED: {
         this.handleBattlerKilled(event);
@@ -1525,7 +1521,7 @@ protected updateEnemyShooting(deltaT: number): void {
   }
 
   /**
- * Initialize the NPCs 
+ * Initialize the NPCs
  */
   // protected initializeNPCs(): void {
   //   // Get the object data for the red enemies
@@ -1562,7 +1558,7 @@ protected updateEnemyShooting(deltaT: number): void {
   //     npc.maxHealth = 50;
   //     npc.navkey = "navmesh";
   //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
-  //     // Play the NPCs "IDLE" animation 
+  //     // Play the NPCs "IDLE" animation
   //     npc.animation.play("IDLE");
   //     // Add the NPC to the battlers array
   //     this.battlers.push(npc);
@@ -1582,7 +1578,7 @@ protected updateEnemyShooting(deltaT: number): void {
   //     npc.maxHealth = 100;
   //     npc.navkey = "navmesh";
   //     npc.addAI(GuardBehavior, { target: new BasicTargetable(new Position(npc.position.x, npc.position.y)), range: 100 });
-  //     // Play the NPCs "IDLE" animation 
+  //     // Play the NPCs "IDLE" animation
   //     npc.animation.play("IDLE");
   //     // Add the NPC to the battlers array
   //     this.battlers.push(npc);
@@ -1622,7 +1618,7 @@ protected updateEnemyShooting(deltaT: number): void {
          this.npc = this.add.animatedSprite(NPCActor, "demonBug", "primary");
         this.npc.position.set(red.bugSpawnPoint[i][0], red.bugSpawnPoint[i][1]);
         this.npc.addPhysics(new AABB(Vec2.ZERO, new Vec2(7, 7)), null, false);
-        
+       
         this.npc.battleGroup = 2;
         this.npc.speed = 10;
         this.npc.maxHealth = 20 + this.increaseEnemyHealth2;
@@ -1700,7 +1696,7 @@ protected updateEnemyShooting(deltaT: number): void {
    * Initializes the navmesh graph used by the NPCs in the HW4Scene. This method is a little buggy, and
    * and it skips over some of the positions on the tilemap. If you can fix my navmesh generation algorithm,
    * go for it.
-   * 
+   *
    * - Peter
    */
   protected initializeNavmesh(): void {
@@ -1786,9 +1782,9 @@ protected updateEnemyShooting(deltaT: number): void {
 
   /**
    * Checks if the given target position is visible from the given position.
-   * @param position 
-   * @param target 
-   * @returns 
+   * @param position
+   * @param target
+   * @returns
    */
   public isTargetVisible(position: Vec2, target: Vec2): boolean {
     // Get the new player location
