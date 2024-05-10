@@ -353,42 +353,7 @@ private npc: NPCActor;
     this.helpButton.size.set(80, 16);
     this.helpButton.fontSize = 40;
     this.helpButton.onClickEventId = "help";
-    this.receiver.subscribe("help");
-
-
-
-
-    //menu button
-    this.menuButton = <Button>this.add.uiElement(
-      UIElementType.BUTTON,
-      "timer",
-      {
-        position: new Vec2(this.viewport.getHalfSize().x + 14, 217),
-        text: "Main Menu",
-      }
-    );
-    // Remove the font-related line if you don't have custom fonts
-    this.menuButton.borderColor = Color.BLACK;
-    this.menuButton.textColor = Color.WHITE;
-    this.menuButton.backgroundColor = Color.BLACK;
-    this.menuButton.size.set(80, 16);
-    this.menuButton.fontSize = 40;
-    this.menuButton.onClickEventId = "main menu";
-    this.receiver.subscribe("main menu");
-
-
-    //back button
-    this.backButton = <Button>this.add.uiElement(
-      UIElementType.BUTTON,
-      "timer",
-      {
-        position: new Vec2(30, 30),
-        text: "Back",
-      }
-
-    );
-
-    this.levelSelectionLayer = new Layer(this, "levelSelectionLayer");
+, "levelSelectionLayer");
     this.levelSelectionLayer = this.addLayer('levelSelectionLayer', 100);
     // Now, let's create a level selection screen sprite and add it to the level selection screen layer
     this.levelSelectionScreenSprite = this.add.sprite("levelSelectionScreen", "levelSelectionLayer");
@@ -559,6 +524,33 @@ private npc: NPCActor;
     this.upgradeAttackSpeed.visible = false;
 
     this.upgradeAttackDamage.visible = false;
+
+    this.backButton = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(30, 30),
+        text: "Back",
+      }
+    );
+    // Remove the font-related line if you don't have custom fonts
+    this.backButton.borderColor = Color.BLACK;
+    this.backButton.textColor = Color.WHITE;
+    this.backButton.backgroundColor = Color.BLACK;
+    this.backButton.size.set(80, 16);
+    this.backButton.fontSize = 40;
+    this.backButton.onClickEventId = "back";
+    this.receiver.subscribe("back");
+
+    //level 1 button
+    this.levelButton1 = <Button>this.add.uiElement(
+      UIElementType.BUTTON,
+      "timer",
+      {
+        position: new Vec2(this.viewport.getHalfSize().x, 127),
+        text: "Level 1",
+      }
+    );
 
   }
 
