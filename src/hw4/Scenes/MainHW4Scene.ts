@@ -1045,7 +1045,9 @@ private npc: NPCActor;
                 const direction = this.player.position.clone().sub(battler.position).normalize();
                 // Adjust enemy's position based on the direction and speed
                 battler.position.add(direction.scaled(speed));
-
+                const rotation = Vec2.UP.angleToCCW(direction);
+                // Set rotation for the current battler
+                battler.rotation = rotation;
                 // Check if the player is within the attack range and timer is expired
                 if (battler.timer === undefined || battler.timer <= 0) {
                     const distanceToPlayer = battler.position.distanceTo(this.player.position);
