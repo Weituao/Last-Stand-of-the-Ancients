@@ -180,24 +180,7 @@ private npc: NPCActor;
     // Load the enemy locations
     this.load.object("red", "hw4_assets/data/enemies/red.json");
     // Load the healthpack and lasergun loactions
-    this.load.object("healthpacks", "hw4_assets/data/items/healthpacks.json");
-    this.load.object("laserguns", "hw4_assets/data/items/laserguns.json");
-    // Load the healthpack, inventory slot, and laser gun sprites
-    this.load.image("healthpack", "hw4_assets/sprites/healthpack.png");
-    this.load.image("inventorySlot", "hw4_assets/sprites/inventory.png");
-    this.load.image("laserGun", "hw4_assets/sprites/laserGun.png");
-    this.load.audio("music4", "hw4_assets/music/music4.wav");
-    this.load.audio("walk", "hw4_assets/music/walk.wav");
-    this.load.audio("attack", "hw4_assets/music/attack.wav");
-    this.load.audio("taking_damage", "hw4_assets/music/taking_damage.wav");
 
-    this.load.image("pauseScreen", "hw4_assets/Screens/pause_menu.png");
-    this.load.image("controlsScreen", "hw4_assets/Screens/controls_screen.png");
-    this.load.image("levelSelectionScreen", "hw4_assets/Screens/level_selection_screen.png");
-    this.load.image("helpScreen", "hw4_assets/Screens/help_screen.png");
-    this.load.image("upgradeScreen", "hw4_assets/Screens/upgrade_screen.png");
-    this.load.image("bullet", "hw4_assets/sprites/playerBullet.png");
-    this.load.image("enemyBullet", "hw4_assets/sprites/enemyBullet.png");
 
   }
 
@@ -402,7 +385,29 @@ private npc: NPCActor;
         position: new Vec2(30, 30),
         text: "Back",
       }
+
     );
+
+    this.levelSelectionLayer = new Layer(this, "levelSelectionLayer");
+    this.levelSelectionLayer = this.addLayer('levelSelectionLayer', 100);
+    // Now, let's create a level selection screen sprite and add it to the level selection screen layer
+    this.levelSelectionScreenSprite = this.add.sprite("levelSelectionScreen", "levelSelectionLayer");
+    this.levelSelectionScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.levelSelectionLayer.addNode(this.levelSelectionScreenSprite);
+    this.levelSelectionScreenSprite.scale.set(0.4, 0.4);
+    this.levelSelectionLayer.setHidden(true); // Hide the layer initially
+
+    //create help screen
+    this.helpLayer = new Layer(this, "helpLayer");
+    this.helpLayer = this.addLayer('helpLayer', 100);
+    // Now, let's create a help screen sprite and add it to the help screen layer
+    this.helpScreenSprite = this.add.sprite("helpScreen", "helpLayer");
+    this.helpScreenSprite.position.set(this.viewport.getCenter().x, this.viewport.getCenter().y);
+    this.helpLayer.addNode(this.helpScreenSprite);
+    this.helpScreenSprite.scale.set(0.4, 0.4);
+    this.helpLayer.setHidden(true); // Hide the layer initially
+
+    this.emitter.fireEvent(GameEventType.PLAY_SOUND, { key: "music2", loop: true, holdReference: true });
     // Remove the font-related line if you don't have custom fonts
     this.backButton.borderColor = Color.BLACK;
     this.backButton.textColor = Color.WHITE;
